@@ -67,6 +67,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\css\style.css" />
+    <Content Include="assets\js\main.js" />
     <Content Include="login.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -88,6 +90,10 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="assets\{css,js,assets\icons,pages}\" />
+    <Folder Include="uploads\images\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
