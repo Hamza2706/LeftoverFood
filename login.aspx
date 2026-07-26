@@ -60,19 +60,35 @@
                         <div class="auth-tab" data-tab="registerPanel">Register</div>
                     </div>
 
+                     <asp:Label ID="lblMessage" runat="server" Visible="false" CssClass="alert"></asp:Label>
+
                     <!-- LOGIN PANEL -->
                     <div id="loginPanel" class="auth-panel">
                         <div class="fb-form-group">
-                            <label>Email Address</label>
+                            <label for="txtEmail">Email Address</label>
                             <%--<input type="email" class="fb-input" placeholder="you@example.com"/>--%>
-                            <asp:TextBox runat="server" ID="email" class="fb-input"></asp:TextBox>
+                            <asp:TextBox ID="txtEmail" runat="server" TextMode="Email"  class="fb-input"></asp:TextBox>
+                              <asp:RequiredFieldValidator ID="rfvEmail" runat="server"
+                              ControlToValidate="txtEmail"
+                              ErrorMessage="Email is required"
+                              CssClass="validator-msg"
+                              Display="Dynamic" 
+                                   ValidationGroup="LoginGroup" />
                         </div>
                         <div class="fb-form-group">
-                            <label>Password</label>
+                            <label for="txtPassword">Password</label>
                             <div style="position: relative">
-                                <input type="password" id="loginPass" class="fb-input" placeholder="Enter your password" style="padding-right: 2.8rem" />
-                                <i class="bi bi-eye" id="toggleLoginPass" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted)"></i>
+                                <%--<input type="password" id="loginPass" class="fb-input" placeholder="Enter your password" style="padding-right: 2.8rem" />
+                                <i class="bi bi-eye" id="toggleLoginPass" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted)"></i>--%>
+                                 <asp:TextBox  CssClass="fb-input" ID="txtPassword" runat="server" TextMode="Password" />
+                                 <asp:RequiredFieldValidator ID="rfvPass" runat="server"
+                                     ControlToValidate="txtPassword"
+                                     ErrorMessage="Password is required"
+                                     CssClass="validator-msg"
+                                     Display="Dynamic"  ValidationGroup="LoginGroup"  />
                             </div>
+
+
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <label style="display: flex; align-items: center; gap: .5rem; font-size: .87rem; cursor: pointer">
@@ -85,7 +101,7 @@
                         <div>
                             <asp:Label ID="lblError" runat="server" ForeColor="Red" CssClass="mb-3"></asp:Label>
                         </div>
-                        <asp:Button class="btn-green w-100 py-2" Style="border-radius: var(--radius-sm)" runat="server" OnClick="signin_Click" Text="Sign In"></asp:Button>
+                        <asp:Button  ValidationGroup="LoginGroup"  class="btn-green w-100 py-2" Style="border-radius: var(--radius-sm)" runat="server" OnClick="btnLogin_Click" Text="Sign In"></asp:Button>
                         <div class="divider">or continue with</div>
                         <div class="d-flex gap-2">
                             <button class="btn-sm-outline w-100 py-2" style="border-radius: var(--radius-sm)"><i class="bi bi-google me-1"></i>Google</button>
@@ -93,36 +109,68 @@
                         </div>
                         <p class="text-center mt-3" style="font-size: .85rem; color: var(--text-muted)">Don't have an account? <a href="#" class="text-success fw-600" style="font-weight: 600" onclick="document.querySelector('[data-tab=registerPanel]').click()">Register here</a></p>
                     </div>
+                            <asp:Label ID="lblMessage2" runat="server" Visible="false" CssClass="alert"></asp:Label>
 
                     <!-- REGISTER PANEL -->
                     <div id="registerPanel" class="auth-panel d-none">
                         <div class="fb-form-group">
-                            <label>Full Name</label>
-                            <input type="text" class="fb-input" placeholder="Your full name" />
+                            <label  for="txtFullName">Full Name</label>
+                            <%--<input type="text" class="fb-input" placeholder="Your full name" />--%>
+                             <asp:TextBox ID="txtFullName" runat="server" placeholder="Ahmed Khan" class="fb-input" />
+                             <asp:RequiredFieldValidator ID="rfvName" runat="server"
+                                 ControlToValidate="txtFullName"
+                                 ErrorMessage="Name is required"
+                                 CssClass="validator-msg"
+                                 Display="Dynamic" ValidationGroup="RegisterGroup"  />
                         </div>
                         <div class="fb-form-group">
-                            <label>Email Address</label>
-                            <input type="email" class="fb-input" placeholder="you@example.com" />
+                            <label for="txtEmailReg">Email Address</label>
+                            <%--<input type="email" class="fb-input" placeholder="you@example.com" />--%>
+                              <asp:TextBox class="fb-input" ID="txtEmailReg" runat="server" TextMode="Email" placeholder="you@example.com" />
+                              <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server"
+                                  ControlToValidate="txtEmailReg"
+                                  ErrorMessage="Email is required"
+                                  CssClass="validator-msg"
+                                  Display="Dynamic"  ValidationGroup="RegisterGroup"/>
+                              <asp:RegularExpressionValidator ID="revEmail" runat="server"
+                                  ControlToValidate="txtEmailReg"
+                                  ValidationExpression="^[^@\s]+@[^@\s]+\.[^@\s]+$"
+                                  ErrorMessage="Enter a valid email"
+                                  CssClass="validator-msg"
+                                  Display="Dynamic"  ValidationGroup="RegisterGroup" />
                         </div>
                         <div class="fb-form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" class="fb-input" placeholder="+92 300 0000000" />
+                            <label for="txtPhone">Phone Number</label>
+                            <%--<input type="tel" class="fb-input" placeholder="+92 300 0000000" />--%>
+                              <asp:TextBox ID="txtPhone" runat="server" class="fb-input" placeholder="0300-1234567" />
                         </div>
                         <div class="fb-form-group">
-                            <label>Register As</label>
-                            <select class="fb-input fb-select">
+                            <label  for="ddlRole">Register As</label>
+                         <%--   <select class="fb-input fb-select">
                                 <option value="">Select your role...</option>
                                 <option>Food Donor (Individual)</option>
                                 <option>Food Donor (Restaurant / Business)</option>
                                 <option>NGO / Charity Organization</option>
                                 <option>Volunteer</option>
-                            </select>
+                            </select>--%>
+                             <asp:DropDownList CssClass="fb-input fb-select" ID="ddlRole" runat="server">
+                                <asp:ListItem Value="">-- Select Role --</asp:ListItem>
+                                <asp:ListItem Value="Donor">Donor (Restaurant / Individual)</asp:ListItem>
+                                <asp:ListItem Value="NGO">NGO / Welfare Organization</asp:ListItem>
+                                <asp:ListItem Value="Volunteer">Volunteer (Delivery)</asp:ListItem>
+                            </asp:DropDownList>
+                            <asp:RequiredFieldValidator ID="rfvRole" runat="server"
+                                ControlToValidate="ddlRole"
+                                InitialValue=""
+                                ErrorMessage="Please select a role"
+                                CssClass="validator-msg"
+                                Display="Dynamic" />
                         </div>
                         <div class="fb-form-group" id="orgField" style="display: none">
                             <label>Organization Name</label>
                             <input type="text" class="fb-input" placeholder="Your NGO or organization name" />
                         </div>
-                        <div class="fb-form-group">
+                     <%--   <div class="fb-form-group">
                             <label>City</label>
                             <select class="fb-input fb-select">
                                 <option value="">Select city...</option>
@@ -133,15 +181,20 @@
                                 <option>Peshawar</option>
                                 <option>Quetta</option>
                             </select>
+                        </div>--%>
+                        <div class="fb-form-group">
+                            <label for="txtAddress">Address</label>
+                                       <asp:TextBox CssClass="fb-input" ID="txtAddress" runat="server" placeholder="Street, Area, City" />
+
                         </div>
                         <div class="fb-form-group">
-                            <label>Password</label>
+                            <label for="txtPasswordReg">Password</label>
                             <%-- <div style="position:relative">
             <input type="password" id="regPass" class="fb-input" placeholder="Create a strong password" style="padding-right:2.8rem"/>
             <i class="bi bi-eye" id="toggleRegPass" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted)"></i>
 
           </div>--%>
-                            <div style="position: relative">
+                           <%-- <div style="position: relative">
 
                                 <asp:TextBox
                                     ID="password"
@@ -156,8 +209,53 @@
                                     id="toggleRegPass"
                                     style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted)"></i>
 
-                            </div>
+                            </div>--%>
+                            <asp:TextBox  CssClass="fb-input" ID="txtPasswordReg" runat="server" TextMode="Password" placeholder="Min. 6 characters" />
+    <asp:RequiredFieldValidator ID="rfvPassReg" runat="server"
+     ControlToValidate="txtPasswordReg"
+     ErrorMessage="Password is required"
+     CssClass="validator-msg"
+     Display="Dynamic" ValidationGroup="RegisterGroup" />
+ <asp:RegularExpressionValidator ID="revPassReg" runat="server"
+     ControlToValidate="txtPasswordReg"
+     ValidationExpression=".{6,}"
+     ErrorMessage="Min. 6 characters"
+     CssClass="validator-msg"
+     Display="Dynamic"  ValidationGroup="RegisterGroup"/>
                         </div>
+
+                                      <div class="fb-form-group">
+                  <label for="txtConfirmPass">Confirm Password</label>
+                  <%-- <div style="position:relative">
+  <input type="password" id="regPass" class="fb-input" placeholder="Create a strong password" style="padding-right:2.8rem"/>
+  <i class="bi bi-eye" id="toggleRegPass" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--text-muted)"></i>
+
+</div>--%>
+
+                                            <asp:TextBox CssClass="fb-input" ID="txtConfirmPass" runat="server" TextMode="Password" placeholder="Repeat password" />
+  <asp:CompareValidator ID="cvPass" runat="server"
+      ControlToValidate="txtConfirmPass"
+      ControlToCompare="txtPasswordReg"
+      ErrorMessage="Passwords do not match"
+      CssClass="validator-msg"
+      Display="Dynamic"   ValidationGroup="RegisterGroup"/>
+                  <%--<div style="position: relative">
+
+                      <asp:TextBox
+                          ID="Con"
+                          runat="server"
+                          CssClass="fb-input"
+                          TextMode="Password"
+                          placeholder="Create a strong password"
+                          Style="padding-right: 2.8rem;">
+                      </asp:TextBox>
+
+                      <i class="bi bi-eye"
+                          id="toggleRegPass"
+                          style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted)"></i>
+
+                  </div>--%>
+              </div>
                         <div class="fb-form-group">
                             <label style="display: flex; align-items: flex-start; gap: .5rem; font-size: .85rem; cursor: pointer; font-weight: 400">
                                 <input type="checkbox" class="form-check-input mt-0 flex-shrink-0" />
@@ -165,7 +263,8 @@
                             </label>
                         </div>
                        
-                        <button class="btn-green w-100 py-2" style="border-radius: var(--radius-sm)" onclick="fbToast('Account created! Please verify your email.')">Create Account</button>
+                        <%--<button class="btn-green w-100 py-2" style="border-radius: var(--radius-sm)" onclick="fbToast('Account created! Please verify your email.')">Create Account</button>--%>
+                        <asp:Button  ValidationGroup="RegisterGroup" runat="server"  OnClick="btnRegister_Click"  class="btn-green w-100 py-2" style="border-radius: var(--radius-sm)" Text="Create Account" />
                         <p class="text-center mt-3" style="font-size: .85rem; color: var(--text-muted)">Already have an account? <a href="#" style="color: var(--green); font-weight: 600" onclick="document.querySelector('[data-tab=loginPanel]').click()">Sign in</a></p>
                     </div>
 

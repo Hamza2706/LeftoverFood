@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LeftoverFoodSystem;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,137 +14,176 @@ namespace LeftoverFood
 {
     public partial class login : System.Web.UI.Page
     {
-        SqlConnection cn1;
-
+        
         protected void Page_Load(object sender, EventArgs e)
         {
+            // If user is already logged in, redirect to their dashboard
+            if (Session["UserID"] != null)
+                RedirectToDashboard(Session["Role"].ToString());
+        }
 
-            string connStr = ConfigurationManager.ConnectionStrings["MyDbConnection"].ConnectionString;
+        protected void btnLogin_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
 
-            cn1 = new SqlConnection(connStr);
+            string email = txtEmail.Text.Trim().ToLower();
+            string password = txtPassword.Text;
 
-            if (!IsPostBack)
+            // 1. Fetch user by email
+            string query = @"
+                SELECT UserID, FullName, Role, PasswordHash, IsVerified
+                FROM Users
+                WHERE Email = @Email";
+
+            SqlParameter[] parameters = {
+                new SqlParameter("@Email", email)
+            };
+
+            try
             {
-                //loginErr.Text = "";
-                FormsAuthentication.SignOut();
-                //int aaa = VerifyADLogin("zeeshan", "KingExcalibur2022!");
+                DataTable dt = DBHelper.ExecuteQuery(query, parameters);
+
+                if (dt.Rows.Count == 0)
+                {
+                    ShowMessage("No account found with this email.", "alert alert-danger");
+                    return;
+                }
+
+                DataRow user = dt.Rows[0];
+
+                // 2. Verify password
+                string storedHash = user["PasswordHash"].ToString();
+                if (!PasswordHelper.VerifyPassword(password, storedHash))
+                {
+                    ShowMessage("Incorrect password. Please try again.", "alert alert-danger");
+                    return;
+                }
+
+                // 3. Check if account is approved by Admin
+                bool isVerified = Convert.ToBoolean(user["IsVerified"]);
+                if (!isVerified)
+                {
+                    ShowMessage("Your account is pending admin approval. Please wait for verification.", "alert alert-warning");
+                    return;
+                }
+
+                // 4. Set session variables
+                Session["UserID"] = user["UserID"].ToString();
+                Session["FullName"] = user["FullName"].ToString();
+                Session["Role"] = user["Role"].ToString();
+                Session["Email"] = email;
+
+                // 5. Redirect based on role
+                RedirectToDashboard(user["Role"].ToString());
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("An error occurred: " + ex.Message, "alert alert-danger");
             }
         }
 
-        protected void signin_Click(object sender, EventArgs e)
+        // Redirect user to the correct dashboard based on their role
+        private void RedirectToDashboard(string role)
         {
+            switch (role)
+            {
+                case "Admin":
+                    Response.Redirect("~/Admin/admin-dashboard.aspx");
+                    break;
+                case "Donor":
+                    Response.Redirect("~/Donor/donor-dashboard.aspx");
+                    break;
+                case "NGO":
+                    Response.Redirect("~/NGO/ngo-dashboard.aspx");
+                    break;
+                case "Volunteer":
+                    Response.Redirect("~/Volunteer/volunteer-dashboard.aspx");
+                    break;
+                default:
+                    Response.Redirect("~/Login.aspx");
+                    break;
+            }
+        }
+
+        private void ShowMessage(string message, string cssClass)
+        {
+            lblMessage.Text = message;
+            lblMessage.CssClass = cssClass;
+            lblMessage.Visible = true;
+        }
+
+
+        protected void btnRegister_Click(object sender, EventArgs e)
+        {
+            // Extra server-side guard (client validators can be bypassed)
+            if (!Page.IsValid) return;
+
+            string fullName = txtFullName.Text.Trim();
+            string email = txtEmailReg.Text.Trim().ToLower();
+            string phone = txtPhone.Text.Trim();
+            string role = ddlRole.SelectedValue;
+            string address = txtAddress.Text.Trim();
+            string password = txtPasswordReg.Text;
+
+            // 1. Check if email already exists
+            string checkQuery = "SELECT COUNT(*) FROM Users WHERE Email = @Email";
+            SqlParameter[] checkParams = {
+                new SqlParameter("@Email", email)
+            };
+            int count = Convert.ToInt32(DBHelper.ExecuteScalar(checkQuery, checkParams));
+
+            if (count > 0)
+            {
+                ShowMessage("This email is already registered. Please login.", "alert alert-danger");
+                return;
+            }
+
+            // 2. Hash the password
+            string hashedPassword = PasswordHelper.HashPassword(password);
+
+            // 3. Insert new user (IsVerified = 0 until Admin approves)
+            string insertQuery = @"
+                INSERT INTO Users (FullName, Email, PasswordHash, Role, Phone, Address, IsVerified, CreatedAt)
+                VALUES (@FullName, @Email, @PasswordHash, @Role, @Phone, @Address, 0, GETDATE())";
+
+            SqlParameter[] insertParams = {
+                new SqlParameter("@FullName",     fullName),
+                new SqlParameter("@Email",        email),
+                new SqlParameter("@PasswordHash", hashedPassword),
+                new SqlParameter("@Role",         role),
+                new SqlParameter("@Phone",        phone),
+                new SqlParameter("@Address",      address)
+            };
+
             try
             {
-                if (string.IsNullOrWhiteSpace(email.Text) || !email.Text.Contains("@"))
+                int rows = DBHelper.ExecuteNonQuery(insertQuery, insertParams);
+
+                if (rows > 0)
                 {
-                    lblError.Text = "Please enter a valid email address.";
-                    return;
-                }
-                string[] code = email.Text.Split('@');
-                string level1 = code[0];
-                string level2 = code[1];
-                if (level2 != "")
-                {
-                    //string jobType = "";
-                    //using (SqlCommand checkJob = new SqlCommand("SELECT job_type FROM EmployeesView WHERE email=@Email", cn1))
-                    //{
-                    //    checkJob.Parameters.AddWithValue("@Email", email.Text);
-                    //    cn1.Open();
-                    //    object result = checkJob.ExecuteScalar();
-                    //    cn1.Close();
-
-                    //    if (result != null)
-                    //        jobType = result.ToString();
-                    //}
-
-
-                    //if (jobType == "Cleaner")
-                    //{
-                    //    lblError.Text = "Access is restricted. Only authorized personnel are permitted to log in. Please contact your system administrator if you require access.";
-                    //    email.Text = "";
-                    //    password.Text = "";
-                    //    return;
-                    //}
-
-                    string DomainName = "";
-                    string[] FullEmail = email.Text.Split('@');
-                    if (FullEmail.Length > 1)
-                    {
-                        DomainName = FullEmail[1];
-                    }
-
-
-
-                    using (SqlCommand cmd = new SqlCommand("ValidateUser", cn1))
-                    {
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                        string EncPass = FormsAuthentication.HashPasswordForStoringInConfigFile(password.Text, "SHA1");
-
-                        SqlParameter EName = new SqlParameter("@Email", email.Text);
-                        SqlParameter EPass = new SqlParameter("@UserPass", EncPass);
-
-                        cmd.Parameters.Add(EName);
-                        cmd.Parameters.Add(EPass);
-                        cn1.Open();
-                        int ReturnCode = (int)cmd.ExecuteScalar();
-                        cn1.Close();
-                        if (ReturnCode == 1 || ReturnCode == 2)
-                        {
-                            FormsAuthentication.RedirectFromLoginPage(email.Text, false);
-                        }
-                        else
-                        {
-                            lblError.Text = "Incorrect Email or Password. Please use organization email id only";
-                            email.Text = "";
-                            password.Text = "";
-                        }
-                    }
-
-
-
-
+                    ShowMessage("Registration successful! Your account is pending admin approval. You will be notified via email.", "alert alert-success");
+                    ClearForm();
                 }
                 else
                 {
-                    //   lblError.Text = "Please use organization email id only";
+                    ShowMessage("Registration failed. Please try again.", "alert alert-danger");
                 }
             }
-            catch (Exception Exx)
+            catch (Exception ex)
             {
-                //loginErr.Text = "Invalid email id!";
-                lblError.Text = Exx.ToString();
-                email.Text = "";
-                password.Text = "";
+                ShowMessage("An error occurred: " + ex.Message, "alert alert-danger");
             }
+        }
 
-
-
-            //if (UsrName.Text == "altaf@cleanology.com" && UsrPass.Text == "systemadmin123")
-            //{                
-            //    bool isCookiePersistent = chckrm.Checked;
-
-            //    FormsAuthenticationTicket authTicket = new FormsAuthenticationTicket(1, UsrName.Text, DateTime.Now, DateTime.Now.AddMinutes(180), isCookiePersistent, "");
-
-            //    //Encrypt the ticket.
-            //    string encryptedTicket = FormsAuthentication.Encrypt(authTicket);
-
-            //    //Create a cookie, and then add the encrypted ticket to the cookie as data.
-            //    HttpCookie authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
-
-            //    if (true == isCookiePersistent)
-            //        authCookie.Expires = authTicket.Expiration;
-
-            //    //Add the cookie to the outgoing cookies collection.
-            //    Response.Cookies.Add(authCookie);
-
-            //    //You can redirect now.
-            //    Response.Redirect(FormsAuthentication.GetRedirectUrl(UsrName.Text, false));
-            //}
-            //else
-            //{
-            //    loginErr.Text = "Incorrect Information!";
-            //}
+        private void ClearForm()
+        {
+            txtFullName.Text = "";
+            txtEmail.Text = "";
+            txtPhone.Text = "";
+            txtAddress.Text = "";
+            txtPasswordReg.Text = "";
+            txtConfirmPass.Text = "";
+            ddlRole.SelectedIndex = 0;
         }
     }
 }

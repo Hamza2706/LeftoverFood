@@ -242,3 +242,39 @@ h1, h2, h3, h4, h5, h6 { font-family: 'DM Serif Display', serif; line-height: 1.
   .hero-section { padding: 60px 0 50px; }
   .cta-block { margin: 0; border-radius: 0; padding: 50px 24px; }
 }
+
+
+
+
+
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    margin-bottom: 1.2rem;
+}
+
+.alert-danger {
+    background: #fdecea;
+    color: #c0392b;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #eafaf1;
+    color: #1e7e34;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-warning {
+    background: #fff8e1;
+    color: #856404;
+    border: 1px solid #ffc107;
+}
+
+.validator-msg {
+    font-size: 0.78rem;
+    color: #e74c3c;
+    margin-top: 0.25rem;
+    display: block;
+}

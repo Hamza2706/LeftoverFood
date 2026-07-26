@@ -67,16 +67,117 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Admin\admin-dashboard.aspx" />
+    <Content Include="Admin\emergency-mode.aspx" />
+    <Content Include="Admin\food-approvals.aspx" />
+    <Content Include="Admin\fraud-detection.aspx" />
+    <Content Include="Admin\reports.aspx" />
+    <Content Include="Admin\volunteer-assign.aspx" />
     <Content Include="assets\css\style.css" />
     <Content Include="assets\js\main.js" />
+    <Content Include="Donor\donate-form.aspx" />
+    <Content Include="Donor\donor-dashboard.aspx" />
+    <Content Include="Donor\notifications.aspx" />
+    <Content Include="Donor\profile.aspx" />
+    <Content Include="Donor\ratings.aspx" />
+    <Content Include="Donor\track-donation.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="index.html" />
     <Content Include="login.aspx" />
+    <Content Include="NGO\ngo-active-requests.aspx" />
+    <Content Include="NGO\ngo-dashboard.aspx" />
+    <Content Include="Properties\index.html" />
     <Content Include="TestRegLogin\Login.aspx" />
     <Content Include="TestRegLogin\Register.aspx" />
+    <Content Include="Volunteer\volunteer-dashboard.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin\admin-dashboard.aspx.cs">
+      <DependentUpon>admin-dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\admin-dashboard.aspx.designer.cs">
+      <DependentUpon>admin-dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\emergency-mode.aspx.cs">
+      <DependentUpon>emergency-mode.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\emergency-mode.aspx.designer.cs">
+      <DependentUpon>emergency-mode.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\food-approvals.aspx.cs">
+      <DependentUpon>food-approvals.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\food-approvals.aspx.designer.cs">
+      <DependentUpon>food-approvals.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\fraud-detection.aspx.cs">
+      <DependentUpon>fraud-detection.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\fraud-detection.aspx.designer.cs">
+      <DependentUpon>fraud-detection.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\reports.aspx.cs">
+      <DependentUpon>reports.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\reports.aspx.designer.cs">
+      <DependentUpon>reports.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\volunteer-assign.aspx.cs">
+      <DependentUpon>volunteer-assign.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\volunteer-assign.aspx.designer.cs">
+      <DependentUpon>volunteer-assign.aspx</DependentUpon>
+    </Compile>
     <Compile Include="DBHelper.cs" />
+    <Compile Include="Donor\donate-form.aspx.cs">
+      <DependentUpon>donate-form.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Donor\donate-form.aspx.designer.cs">
+      <DependentUpon>donate-form.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Donor\donor-dashboard.aspx.cs">
+      <DependentUpon>donor-dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Donor\donor-dashboard.aspx.designer.cs">
+      <DependentUpon>donor-dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Donor\notifications.aspx.cs">
+      <DependentUpon>notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Donor\notifications.aspx.designer.cs">
+      <DependentUpon>notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Donor\profile.aspx.cs">
+      <DependentUpon>profile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Donor\profile.aspx.designer.cs">
+      <DependentUpon>profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Donor\ratings.aspx.cs">
+      <DependentUpon>ratings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Donor\ratings.aspx.designer.cs">
+      <DependentUpon>ratings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Donor\track-donation.aspx.cs">
+      <DependentUpon>track-donation.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Donor\track-donation.aspx.designer.cs">
+      <DependentUpon>track-donation.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -86,6 +187,20 @@
     </Compile>
     <Compile Include="login.aspx.designer.cs">
       <DependentUpon>login.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="NGO\ngo-active-requests.aspx.cs">
+      <DependentUpon>ngo-active-requests.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="NGO\ngo-active-requests.aspx.designer.cs">
+      <DependentUpon>ngo-active-requests.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="NGO\ngo-dashboard.aspx.cs">
+      <DependentUpon>ngo-dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="NGO\ngo-dashboard.aspx.designer.cs">
+      <DependentUpon>ngo-dashboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="PasswordHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -103,6 +218,13 @@
     </Compile>
     <Compile Include="TestRegLogin\Register.aspx.designer.cs">
       <DependentUpon>Register.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Volunteer\volunteer-dashboard.aspx.cs">
+      <DependentUpon>volunteer-dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Volunteer\volunteer-dashboard.aspx.designer.cs">
+      <DependentUpon>volunteer-dashboard.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
