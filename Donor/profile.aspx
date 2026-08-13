@@ -1,15 +1,6 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="profile.aspx.cs" Inherits="LeftoverFood.Donor.profile" %>
+<%@ Page Title="My Profile – FoodBridge" Language="C#" MasterPageFile="~/Donor/DonorMaster.master" AutoEventWireup="true" CodeBehind="profile.aspx.cs" Inherits="LeftoverFood.Donor.profile" %>
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml"><html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>My Profile – FoodBridge</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="../assets/css/style.css" rel="stylesheet"/>
+<asp:Content ID="Content1" ContentPlaceHolderID="DonorHeadContent" runat="server">
   <style>
     .profile-hero { background:linear-gradient(135deg, var(--green), #1b4332); border-radius:var(--radius-lg); padding:2.5rem; color:#fff; position:relative; overflow:hidden; }
     .profile-hero::after { content:''; position:absolute; width:300px; height:300px; background:rgba(255,255,255,.05); border-radius:50%; top:-80px; right:-60px; }
@@ -23,55 +14,21 @@
     .activity-item:last-child { border-bottom:none; }
     .act-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.9rem; flex-shrink:0; }
   </style>
-</head>
-<body style="background:var(--cream)">
-<div class="fb-layout">
+</asp:Content>
 
-  <aside class="fb-sidebar" id="fbSidebar">
-    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
-    <nav class="fb-sidebar-nav">
-      <div class="fb-sidebar-section">Main</div>
-      <a class="fb-nav-item" href="donor-dashboard.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a class="fb-nav-item" href="donate-form.html"><i class="bi bi-plus-circle-fill"></i> New Donation</a>
-      <a class="fb-nav-item" href="track-donation.html"><i class="bi bi-geo-alt-fill"></i> Track Donation</a>
-      <div class="fb-sidebar-section">Activity</div>
-      <a class="fb-nav-item" href="ratings.html"><i class="bi bi-star-fill"></i> Ratings & Trust</a>
-      <a class="fb-nav-item" href="notifications.html"><i class="bi bi-bell-fill"></i> Notifications</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-award-fill"></i> My Certificates</a>
-      <div class="fb-sidebar-section">Account</div>
-      <a class="fb-nav-item active" href="profile.html"><i class="bi bi-person-fill"></i> My Profile</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-gear-fill"></i> Settings</a>
-      <a class="fb-nav-item" href="login.html" style="color:var(--red)"><i class="bi bi-box-arrow-left"></i> Logout</a>
-    </nav>
-    <div class="fb-sidebar-footer">
-      <div class="fb-user-chip">
-        <div class="fb-avatar">AK</div>
-        <div><div class="name">Ahmed Khan</div><div class="role"><span class="badge-status badge-role-donor px-2">Donor</span></div></div>
-      </div>
-    </div>
-  </aside>
+<asp:Content ID="Content2" ContentPlaceHolderID="DonorPageHeading" runat="server">My Profile</asp:Content>
 
-  <div class="fb-main">
-    <div class="fb-topbar">
-      <button id="sidebarToggle" class="d-lg-none btn btn-sm btn-light border me-2"><i class="bi bi-list"></i></button>
-      <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;flex:1">My Profile</span>
-      <div class="fb-topbar-actions">
-        <div class="notif-btn"><i class="bi bi-bell"></i><span class="notif-dot"></span></div>
-        <div class="fb-avatar">AK</div>
-      </div>
-    </div>
-
-    <div class="fb-content">
+<asp:Content ID="Content3" ContentPlaceHolderID="DonorMainContent" runat="server">
 
       <!-- Profile Hero -->
       <div class="profile-hero mb-4">
         <div class="d-flex flex-wrap align-items-center gap-4">
           <div class="avatar-upload">
-            <div class="avatar-main">AK</div>
+            <div class="avatar-main"><%= LeftoverFoodSystem.SessionHelper.Initials(LeftoverFoodSystem.SessionHelper.GetFullName()) %></div>
             <div class="edit-btn" onclick="fbToast('Photo upload coming soon!')"><i class="bi bi-camera-fill"></i></div>
           </div>
           <div style="flex:1;min-width:200px">
-            <div style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:.3rem">Ahmed Khan</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:.3rem"><%= LeftoverFoodSystem.SessionHelper.GetFullName() %></div>
             <div style="display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;font-size:.85rem;opacity:.85;margin-bottom:.6rem">
               <span class="badge-status badge-role-donor" style="background:rgba(255,255,255,.2);color:#fff">Donor</span>
               <span><i class="bi bi-geo-alt me-1"></i>Karachi, Pakistan</span>
@@ -270,10 +227,5 @@
 
         </div>
       </div>
-    </div>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/main.js"></script>
-</body>
-</html>
+
+</asp:Content>

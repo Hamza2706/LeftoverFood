@@ -1,14 +1,6 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="notifications.aspx.cs" Inherits="LeftoverFood.Donor.notifications" %>
+<%@ Page Title="Notification Settings – FoodBridge" Language="C#" MasterPageFile="~/Donor/DonorMaster.master" AutoEventWireup="true" CodeBehind="notifications.aspx.cs" Inherits="LeftoverFood.Donor.notifications" %>
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml"><head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Notification Settings – FoodBridge</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="../assets/css/style.css" rel="stylesheet"/>
+<asp:Content ID="Content1" ContentPlaceHolderID="DonorHeadContent" runat="server">
   <style>
     .toggle-row { display:flex; justify-content:space-between; align-items:center; padding:.85rem 0; border-bottom:1px solid var(--sand); }
     .toggle-row:last-child { border-bottom:none; }
@@ -28,45 +20,11 @@
     .log-row:last-child { border-bottom:none; }
     .log-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   </style>
-</head>
-<body style="background:var(--cream)">
+</asp:Content>
 
-<div class="fb-layout">
-  <aside class="fb-sidebar" id="fbSidebar">
-    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
-    <nav class="fb-sidebar-nav">
-      <div class="fb-sidebar-section">Main</div>
-      <a class="fb-nav-item" href="donor-dashboard.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a class="fb-nav-item" href="donate-form.html"><i class="bi bi-plus-circle-fill"></i> New Donation</a>
-      <a class="fb-nav-item" href="track-donation.html"><i class="bi bi-geo-alt-fill"></i> Track Donation</a>
-      <div class="fb-sidebar-section">Activity</div>
-      <a class="fb-nav-item" href="ratings.html"><i class="bi bi-star-fill"></i> Ratings</a>
-      <a class="fb-nav-item active" href="notifications.html"><i class="bi bi-bell-fill"></i> Notifications</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-award-fill"></i> Certificates</a>
-      <div class="fb-sidebar-section">Account</div>
-      <a class="fb-nav-item" href="#"><i class="bi bi-person-fill"></i> Profile</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-gear-fill"></i> Settings</a>
-      <a class="fb-nav-item" href="login.html" style="color:var(--red)"><i class="bi bi-box-arrow-left"></i> Logout</a>
-    </nav>
-    <div class="fb-sidebar-footer">
-      <div class="fb-user-chip">
-        <div class="fb-avatar">AK</div>
-        <div><div class="name">Ahmed Khan</div><div class="role"><span class="badge-status badge-role-donor px-2">Donor</span></div></div>
-      </div>
-    </div>
-  </aside>
+<asp:Content ID="Content2" ContentPlaceHolderID="DonorPageHeading" runat="server">Email & Notification Settings</asp:Content>
 
-  <div class="fb-main">
-    <div class="fb-topbar">
-      <button id="sidebarToggle" class="d-lg-none btn btn-sm btn-light border me-2"><i class="bi bi-list"></i></button>
-      <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;flex:1">Email & Notification Settings</span>
-      <div class="fb-topbar-actions">
-        <div class="notif-btn"><i class="bi bi-bell"></i><span class="notif-dot"></span></div>
-        <div class="fb-avatar">AK</div>
-      </div>
-    </div>
-
-    <div class="fb-content">
+<asp:Content ID="Content3" ContentPlaceHolderID="DonorMainContent" runat="server">
 
       <div class="page-header">
         <h2>Notification Preferences</h2>
@@ -172,7 +130,7 @@
                 </div>
                 <div class="email-preview-body">
                   <div style="font-weight:700;font-size:.95rem;margin-bottom:.75rem">✅ Your Donation Has Been Delivered!</div>
-                  <p style="font-size:.83rem;color:var(--text-mid);line-height:1.7;margin-bottom:1rem">Dear Ahmed Khan,</p>
+                  <p style="font-size:.83rem;color:var(--text-mid);line-height:1.7;margin-bottom:1rem">Dear <%= LeftoverFoodSystem.SessionHelper.GetFullName() %>,</p>
                   <p style="font-size:.83rem;color:var(--text-mid);line-height:1.7;margin-bottom:1rem">Great news! Your donation of <strong>30 plates of Biryani & Naan</strong> has been successfully delivered to <strong>Edhi Foundation</strong> by volunteer Usman Ali.</p>
                   <div style="background:#e8f5ee;border-radius:8px;padding:.75rem;margin-bottom:1rem">
                     <div style="font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:.4rem">Delivery Summary</div>
@@ -202,7 +160,7 @@
               <div class="d-flex justify-content-between"><span>Status</span><span class="badge-status badge-active">Connected</span></div>
               <div class="d-flex justify-content-between"><span>Emails sent (April)</span><strong style="color:var(--text-dark)">2,184</strong></div>
             </div>
-            <button class="btn-sm-outline w-100 mt-3" onclick="fbToast('Test email sent to ahmed@restaurant.pk!')">Send Test Email</button>
+            <button class="btn-sm-outline w-100 mt-3" onclick="fbToast('Test email sent!')">Send Test Email</button>
           </div>
 
           <!-- Notification Log -->
@@ -219,11 +177,5 @@
 
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/main.js"></script>
-</body>
-</html>
+</asp:Content>

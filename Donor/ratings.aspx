@@ -1,15 +1,6 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ratings.aspx.cs" Inherits="LeftoverFood.Donor.ratings" %>
+<%@ Page Title="Ratings & Trust – FoodBridge" Language="C#" MasterPageFile="~/Donor/DonorMaster.master" AutoEventWireup="true" CodeBehind="ratings.aspx.cs" Inherits="LeftoverFood.Donor.ratings" %>
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Ratings & Trust – FoodBridge</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="../assets/css/style.css" rel="stylesheet"/>
+<asp:Content ID="Content1" ContentPlaceHolderID="DonorHeadContent" runat="server">
   <style>
     .star-row { display:flex; gap:.25rem; }
     .star-row i { font-size:1.1rem; color:#fbbf24; }
@@ -28,53 +19,19 @@
     .rating-stars-input label:hover ~ label,
     .rating-stars-input input:checked ~ label { color:#fbbf24; }
   </style>
-</head>
-<body style="background:var(--cream)">
+</asp:Content>
 
-<div class="fb-layout">
-  <!-- SIDEBAR -->
-  <aside class="fb-sidebar" id="fbSidebar">
-    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
-    <nav class="fb-sidebar-nav">
-      <div class="fb-sidebar-section">Main</div>
-      <a class="fb-nav-item" href="donor-dashboard.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a class="fb-nav-item" href="donate-form.html"><i class="bi bi-plus-circle-fill"></i> New Donation</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-clock-history"></i> My Donations</a>
-      <div class="fb-sidebar-section">Activity</div>
-      <a class="fb-nav-item active" href="ratings.html"><i class="bi bi-star-fill"></i> Ratings & Trust</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-bell-fill"></i> Notifications</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-award-fill"></i> My Certificates</a>
-      <div class="fb-sidebar-section">Account</div>
-      <a class="fb-nav-item" href="#"><i class="bi bi-person-fill"></i> Profile</a>
-      <a class="fb-nav-item" href="login.html" style="color:var(--red)"><i class="bi bi-box-arrow-left"></i> Logout</a>
-    </nav>
-    <div class="fb-sidebar-footer">
-      <div class="fb-user-chip">
-        <div class="fb-avatar">AK</div>
-        <div><div class="name">Ahmed Khan</div><div class="role"><span class="badge-status badge-role-donor px-2">Donor</span></div></div>
-      </div>
-    </div>
-  </aside>
+<asp:Content ID="Content2" ContentPlaceHolderID="DonorPageHeading" runat="server">Ratings & Trust System</asp:Content>
 
-  <div class="fb-main">
-    <div class="fb-topbar">
-      <button id="sidebarToggle" class="d-lg-none btn btn-sm btn-light border me-2"><i class="bi bi-list"></i></button>
-      <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;flex:1">Ratings & Trust System</span>
-      <div class="fb-topbar-actions">
-        <div class="notif-btn"><i class="bi bi-bell"></i></div>
-        <div class="fb-avatar">AK</div>
-      </div>
-    </div>
-
-    <div class="fb-content">
+<asp:Content ID="Content3" ContentPlaceHolderID="DonorMainContent" runat="server">
 
       <div class="row g-4 mb-4">
 
         <!-- My Trust Profile -->
         <div class="col-lg-4">
           <div class="fb-card text-center" style="background:linear-gradient(145deg,var(--white),#f9fbf9)">
-            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-mid));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:2rem;margin:0 auto 1rem">AK</div>
-            <h5 style="margin-bottom:.2rem">Ahmed Khan</h5>
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green-mid));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:2rem;margin:0 auto 1rem"><%= LeftoverFoodSystem.SessionHelper.Initials(LeftoverFoodSystem.SessionHelper.GetFullName()) %></div>
+            <h5 style="margin-bottom:.2rem"><%= LeftoverFoodSystem.SessionHelper.GetFullName() %></h5>
             <div style="margin-bottom:1rem"><span class="trust-badge trust-gold">🥇 Gold Donor</span></div>
             <div class="star-row justify-content-center mb-1">
               <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
@@ -232,11 +189,4 @@
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/main.js"></script>
-</body>
-</html>
+</asp:Content>

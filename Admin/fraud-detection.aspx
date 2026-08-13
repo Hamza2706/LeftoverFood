@@ -1,15 +1,6 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="fraud-detection.aspx.cs" Inherits="LeftoverFood.Admin.fraud_detection" %>
+<%@ Page Title="Fraud Detection – FoodBridge Admin" Language="C#" MasterPageFile="~/Admin/AdminMaster.master" AutoEventWireup="true" CodeBehind="fraud-detection.aspx.cs" Inherits="LeftoverFood.Admin.fraud_detection" %>
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Fraud Detection – FoodBridge Admin</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="../assets/css/style.css" rel="stylesheet"/>
+<asp:Content ID="Content1" ContentPlaceHolderID="AdminHeadContent" runat="server">
   <style>
     .risk-high   { background:#fee2e2;color:#dc2626;border-left:4px solid #dc2626; }
     .risk-med    { background:#fff3e0;color:#92400e;border-left:4px solid var(--amber); }
@@ -19,43 +10,11 @@
     .rule-card   { background:var(--cream);border-radius:10px;padding:1rem 1.2rem;border:1.5px solid var(--sand);display:flex;align-items:flex-start;gap:.9rem; }
     .rule-icon   { width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1rem; }
   </style>
-</head>
-<body style="background:var(--cream)">
+</asp:Content>
 
-<div class="fb-layout">
-  <aside class="fb-sidebar" id="fbSidebar">
-    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
-    <nav class="fb-sidebar-nav">
-      <div class="fb-sidebar-section">Overview</div>
-      <a class="fb-nav-item" href="admin-dashboard.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-basket2-fill"></i> All Donations</a>
-      <div class="fb-sidebar-section">System</div>
-      <a class="fb-nav-item" href="reports.html"><i class="bi bi-bar-chart-fill"></i> Reports</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-shield-check"></i> Verifications</a>
-      <a class="fb-nav-item" href="emergency-mode.html"><i class="bi bi-exclamation-triangle-fill"></i> Emergency Mode</a>
-      <a class="fb-nav-item active" href="fraud-detection.html"><i class="bi bi-shield-exclamation" style="color:#dc2626"></i> Fraud Detection</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-gear-fill"></i> Settings</a>
-      <a class="fb-nav-item" href="login.html" style="color:var(--red)"><i class="bi bi-box-arrow-left"></i> Logout</a>
-    </nav>
-    <div class="fb-sidebar-footer">
-      <div class="fb-user-chip">
-        <div class="fb-avatar" style="background:var(--purple-light);color:var(--purple)">AD</div>
-        <div><div class="name">Admin</div><div class="role"><span class="badge-status badge-role-admin px-2">Super Admin</span></div></div>
-      </div>
-    </div>
-  </aside>
+<asp:Content ID="Content2" ContentPlaceHolderID="AdminPageHeading" runat="server">Duplicate & Fake Donor Detection</asp:Content>
 
-  <div class="fb-main">
-    <div class="fb-topbar">
-      <button id="sidebarToggle" class="d-lg-none btn btn-sm btn-light border me-2"><i class="bi bi-list"></i></button>
-      <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;flex:1">Duplicate & Fake Donor Detection</span>
-      <div class="fb-topbar-actions">
-        <button class="btn-sm-outline" onclick="fbToast('Fraud scan running...')"><i class="bi bi-arrow-clockwise me-1"></i>Run Scan</button>
-        <div class="fb-avatar" style="background:var(--purple-light);color:var(--purple)">AD</div>
-      </div>
-    </div>
-
-    <div class="fb-content">
+<asp:Content ID="Content3" ContentPlaceHolderID="AdminMainContent" runat="server">
 
       <!-- Alert Banner -->
       <div style="background:#fee2e2;border:1.5px solid #fecaca;border-radius:var(--radius);padding:1rem 1.4rem;display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
@@ -241,11 +200,5 @@
 
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/main.js"></script>
-</body>
-</html>
+</asp:Content>

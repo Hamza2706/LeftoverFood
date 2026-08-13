@@ -31,7 +31,7 @@ namespace LeftoverFood
 
             // 1. Fetch user by email
             string query = @"
-                SELECT UserID, FullName, Role, PasswordHash, IsVerified
+                SELECT UserID, FullName, Role, PasswordHash, IsVerified, IsActive
                 FROM Users
                 WHERE Email = @Email";
 
@@ -59,11 +59,31 @@ namespace LeftoverFood
                     return;
                 }
 
+                // Transparently upgrade older unsalted hashes to the salted format on successful login
+                if (PasswordHelper.IsLegacyHash(storedHash))
+                {
+                    string upgradedHash = PasswordHelper.HashPassword(password);
+                    DBHelper.ExecuteNonQuery(
+                        "UPDATE Users SET PasswordHash = @Hash WHERE UserID = @UserID",
+                        new SqlParameter[]
+                        {
+                            new SqlParameter("@Hash", upgradedHash),
+                            new SqlParameter("@UserID", user["UserID"])
+                        });
+                }
+
                 // 3. Check if account is approved by Admin
                 bool isVerified = Convert.ToBoolean(user["IsVerified"]);
                 if (!isVerified)
                 {
                     ShowMessage("Your account is pending admin approval. Please wait for verification.", "alert alert-warning");
+                    return;
+                }
+
+                bool isActive = Convert.ToBoolean(user["IsActive"]);
+                if (!isActive)
+                {
+                    ShowMessage("Your account has been suspended. Please contact support.", "alert alert-danger");
                     return;
                 }
 
@@ -76,9 +96,9 @@ namespace LeftoverFood
                 // 5. Redirect based on role
                 RedirectToDashboard(user["Role"].ToString());
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ShowMessage("An error occurred: " + ex.Message, "alert alert-danger");
+                ShowMessage("An error occurred while logging in. Please try again.", "alert alert-danger");
             }
         }
 
@@ -125,6 +145,12 @@ namespace LeftoverFood
             string address = txtAddress.Text.Trim();
             string password = txtPasswordReg.Text;
 
+            if (string.IsNullOrEmpty(role))
+            {
+                ShowMessage("Please select a role.", "alert alert-danger");
+                return;
+            }
+
             // 1. Check if email already exists
             string checkQuery = "SELECT COUNT(*) FROM Users WHERE Email = @Email";
             SqlParameter[] checkParams = {
@@ -169,9 +195,9 @@ namespace LeftoverFood
                     ShowMessage("Registration failed. Please try again.", "alert alert-danger");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ShowMessage("An error occurred: " + ex.Message, "alert alert-danger");
+                ShowMessage("Registration failed. Please try again.", "alert alert-danger");
             }
         }
 

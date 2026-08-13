@@ -52,5 +52,15 @@ namespace LeftoverFoodSystem
             HttpContext.Current.Session.Abandon();
             page.Response.Redirect("~/Login.aspx");
         }
+
+        // Two-letter avatar initials from a full name, e.g. "Ahmed Khan" -> "AK"
+        public static string Initials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "?";
+
+            string[] parts = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+            return (parts[0].Substring(0, 1) + parts[parts.Length - 1].Substring(0, 1)).ToUpper();
+        }
     }
 }

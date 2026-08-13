@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using LeftoverFoodSystem;
 
 namespace LeftoverFood.Admin
 {
@@ -11,7 +12,7 @@ namespace LeftoverFood.Admin
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            SessionHelper.RequireRole(this, "Admin");
         }
     }
 }

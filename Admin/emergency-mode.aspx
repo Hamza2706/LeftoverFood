@@ -1,16 +1,6 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="emergency-mode.aspx.cs" Inherits="LeftoverFood.Admin.emergency_mode" %>
+<%@ Page Title="Emergency Mode – FoodBridge Admin" Language="C#" MasterPageFile="~/Admin/AdminMaster.master" AutoEventWireup="true" CodeBehind="emergency-mode.aspx.cs" Inherits="LeftoverFood.Admin.emergency_mode" %>
 
-<!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Emergency Mode – FoodBridge Admin</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="../assets/css/style.css" rel="stylesheet"/>
+<asp:Content ID="Content1" ContentPlaceHolderID="AdminHeadContent" runat="server">
   <style>
     .emergency-banner { background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; border-radius:var(--radius); padding:1.5rem 2rem; display:flex; align-items:center; gap:1.2rem; }
     .emergency-banner.inactive { background:linear-gradient(135deg,#374151,#1f2937); }
@@ -27,45 +17,11 @@
     .ramadan-banner { background:linear-gradient(135deg,#0f172a,#1e293b); color:#fff; border-radius:var(--radius); padding:1.5rem; position:relative; overflow:hidden; }
     .ramadan-banner::before { content:'🌙'; position:absolute; right:1.5rem; top:50%; transform:translateY(-50%); font-size:4rem; opacity:.2; }
   </style>
-</head>
-<body style="background:var(--cream)">
+</asp:Content>
 
-<div class="fb-layout">
+<asp:Content ID="Content2" ContentPlaceHolderID="AdminPageHeading" runat="server">Emergency Mode</asp:Content>
 
-  <!-- SIDEBAR -->
-  <aside class="fb-sidebar" id="fbSidebar">
-    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
-    <nav class="fb-sidebar-nav">
-      <div class="fb-sidebar-section">Overview</div>
-      <a class="fb-nav-item" href="admin-dashboard.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-basket2-fill"></i> All Donations</a>
-      <div class="fb-sidebar-section">System</div>
-      <a class="fb-nav-item" href="reports.html"><i class="bi bi-bar-chart-fill"></i> Reports</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-shield-check"></i> Verifications</a>
-      <a class="fb-nav-item active" href="emergency-mode.html"><i class="bi bi-exclamation-triangle-fill" style="color:#dc2626"></i> Emergency Mode</a>
-      <a class="fb-nav-item" href="fraud-detection.html"><i class="bi bi-shield-exclamation"></i> Fraud Detection</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-gear-fill"></i> Settings</a>
-      <a class="fb-nav-item" href="login.html" style="color:var(--red)"><i class="bi bi-box-arrow-left"></i> Logout</a>
-    </nav>
-    <div class="fb-sidebar-footer">
-      <div class="fb-user-chip">
-        <div class="fb-avatar" style="background:var(--purple-light);color:var(--purple)">AD</div>
-        <div><div class="name">Admin</div><div class="role"><span class="badge-status badge-role-admin px-2">Super Admin</span></div></div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <div class="fb-main">
-    <div class="fb-topbar">
-      <button id="sidebarToggle" class="d-lg-none btn btn-sm btn-light border me-2"><i class="bi bi-list"></i></button>
-      <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;flex:1">Emergency Mode</span>
-      <div class="fb-topbar-actions">
-        <div class="fb-avatar" style="background:var(--purple-light);color:var(--purple)">AD</div>
-      </div>
-    </div>
-
-    <div class="fb-content">
+<asp:Content ID="Content3" ContentPlaceHolderID="AdminMainContent" runat="server">
 
       <!-- Emergency Status Banner -->
       <div class="emergency-banner inactive mb-4" id="emergencyBanner">
@@ -285,34 +241,31 @@
 
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/main.js"></script>
-<script>
-let emergencyActive = false;
-function toggleEmergency() {
-  emergencyActive = !emergencyActive;
-  const banner = document.getElementById('emergencyBanner');
-  const toggle = document.getElementById('emergencyToggle');
-  const statusText = document.getElementById('statusText');
-  const statusDesc = document.getElementById('statusDesc');
-  if (emergencyActive) {
-    banner.classList.remove('inactive');
-    toggle.classList.add('on');
-    statusText.textContent = 'ACTIVE';
-    statusDesc.textContent = 'Emergency Mode is ON. Priority distribution is active. All NGOs have been notified.';
-    fbToast('🚨 Emergency Mode ACTIVATED!', 'error');
-  } else {
-    banner.classList.add('inactive');
-    toggle.classList.remove('on');
-    statusText.textContent = 'INACTIVE';
-    statusDesc.textContent = 'System is running normally. Enable Emergency Mode for priority-based distribution.';
-    fbToast('Emergency Mode deactivated. System returning to normal.');
+</asp:Content>
+
+<asp:Content ID="Content4" ContentPlaceHolderID="AdminFooterScripts" runat="server">
+  <script>
+  let emergencyActive = false;
+  function toggleEmergency() {
+    emergencyActive = !emergencyActive;
+    const banner = document.getElementById('emergencyBanner');
+    const toggle = document.getElementById('emergencyToggle');
+    const statusText = document.getElementById('statusText');
+    const statusDesc = document.getElementById('statusDesc');
+    if (emergencyActive) {
+      banner.classList.remove('inactive');
+      toggle.classList.add('on');
+      statusText.textContent = 'ACTIVE';
+      statusDesc.textContent = 'Emergency Mode is ON. Priority distribution is active. All NGOs have been notified.';
+      fbToast('🚨 Emergency Mode ACTIVATED!', 'error');
+    } else {
+      banner.classList.add('inactive');
+      toggle.classList.remove('on');
+      statusText.textContent = 'INACTIVE';
+      statusDesc.textContent = 'System is running normally. Enable Emergency Mode for priority-based distribution.';
+      fbToast('Emergency Mode deactivated. System returning to normal.');
+    }
   }
-}
-</script>
-</body>
-</html>
+  </script>
+</asp:Content>

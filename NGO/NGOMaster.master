@@ -1,0 +1,42 @@
+<%@ Master Language="C#" MasterPageFile="~/Site.master" AutoEventWireup="true" CodeBehind="NGOMaster.master.cs" Inherits="LeftoverFood.NGO.NGOMaster" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
+    <asp:ContentPlaceHolder ID="NGOHeadContent" runat="server" />
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="SidebarContent" runat="server">
+  <aside class="fb-sidebar" id="fbSidebar">
+    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
+    <nav class="fb-sidebar-nav">
+      <div class="fb-sidebar-section">Main</div>
+      <a class="fb-nav-item <%= IsActive("ngo-dashboard.aspx") %>" href="<%= ResolveUrl("~/NGO/ngo-dashboard.aspx") %>"><i class="bi bi-grid-fill"></i> Dashboard</a>
+      <a class="fb-nav-item <%= IsActive("ngo-active-requests.aspx") %>" href="<%= ResolveUrl("~/NGO/ngo-active-requests.aspx") %>"><i class="bi bi-clipboard2-check-fill"></i> Active Requests</a>
+      <a class="fb-nav-item" href="#"><i class="bi bi-clock-history"></i> History</a>
+      <div class="fb-sidebar-section">Manage</div>
+      <a class="fb-nav-item" href="#"><i class="bi bi-people-fill"></i> Our Volunteers</a>
+      <a class="fb-nav-item" href="#"><i class="bi bi-bar-chart-fill"></i> Reports</a>
+      <a class="fb-nav-item" href="#"><i class="bi bi-bell-fill"></i> Notifications</a>
+      <div class="fb-sidebar-section">Account</div>
+      <a class="fb-nav-item" href="#"><i class="bi bi-building-fill"></i> NGO Profile</a>
+      <asp:LinkButton runat="server" ID="btnLogout" CssClass="fb-nav-item" Style="color:var(--red)" OnClick="btnLogout_Click"><i class="bi bi-box-arrow-left"></i> Logout</asp:LinkButton>
+    </nav>
+    <div class="fb-sidebar-footer">
+      <div class="fb-user-chip">
+        <div class="fb-avatar" style="background:var(--amber-light);color:var(--amber)"><%= LeftoverFoodSystem.SessionHelper.Initials(LeftoverFoodSystem.SessionHelper.GetFullName()) %></div>
+        <div><div class="name"><%= LeftoverFoodSystem.SessionHelper.GetFullName() %></div><div class="role"><span class="badge-status badge-role-ngo px-2">NGO</span></div></div>
+      </div>
+    </div>
+  </aside>
+</asp:Content>
+
+<asp:Content ID="Content3" ContentPlaceHolderID="PageHeading" runat="server">
+    <asp:ContentPlaceHolder ID="NGOPageHeading" runat="server" />
+</asp:Content>
+
+<asp:Content ID="Content4" ContentPlaceHolderID="MainContent" runat="server">
+    <asp:ContentPlaceHolder ID="NGOMainContent" runat="server" />
+</asp:Content>
+
+<asp:Content ID="Content5" ContentPlaceHolderID="FooterScripts" runat="server">
+    <asp:ContentPlaceHolder ID="NGOFooterScripts" runat="server" />
+</asp:Content>

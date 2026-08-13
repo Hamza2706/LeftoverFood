@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using LeftoverFoodSystem;
 
 namespace LeftoverFood.Donor
 {
@@ -11,7 +13,164 @@ namespace LeftoverFood.Donor
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            SessionHelper.RequireRole(this, "Donor");
 
+            if (!IsPostBack)
+            {
+                BindPreferredNGOs();
+            }
+        }
+
+        private void BindPreferredNGOs()
+        {
+            DataTable dt = DBHelper.ExecuteQuery(
+                "SELECT UserID, FullName, OrganizationName, City FROM Users WHERE Role = 'NGO' AND IsVerified = 1 ORDER BY FullName");
+
+            foreach (DataRow row in dt.Rows)
+            {
+                string label = row["OrganizationName"] != DBNull.Value && !string.IsNullOrWhiteSpace(row["OrganizationName"].ToString())
+                    ? row["OrganizationName"].ToString()
+                    : row["FullName"].ToString();
+
+                if (row["City"] != DBNull.Value && !string.IsNullOrWhiteSpace(row["City"].ToString()))
+                    label += " – " + row["City"];
+
+                ddlPreferredNGO.Items.Add(new ListItem(label, row["UserID"].ToString()));
+            }
+        }
+
+        protected void btnSubmit_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
+
+            decimal quantity;
+            int servings;
+            DateTime preparedOn, expiryTime, availableFrom, availableUntil;
+
+            if (!decimal.TryParse(txtQuantity.Text, out quantity) || quantity <= 0)
+            {
+                ShowMessage("Please enter a valid quantity.", "alert-danger");
+                return;
+            }
+            if (!int.TryParse(txtServings.Text, out servings) || servings <= 0)
+            {
+                ShowMessage("Please enter a valid number of servings.", "alert-danger");
+                return;
+            }
+            if (!DateTime.TryParse(txtPreparedOn.Text, out preparedOn))
+            {
+                ShowMessage("Please enter a valid preparation date.", "alert-danger");
+                return;
+            }
+            if (!DateTime.TryParse(txtExpiryTime.Text, out expiryTime))
+            {
+                ShowMessage("Please enter a valid expiry date/time.", "alert-danger");
+                return;
+            }
+            if (expiryTime <= DateTime.Now)
+            {
+                ShowMessage("Expiry time must be in the future.", "alert-danger");
+                return;
+            }
+            if (!TimeSpan.TryParse(txtAvailableFrom.Text, out TimeSpan fromTime) ||
+                !TimeSpan.TryParse(txtAvailableUntil.Text, out TimeSpan untilTime))
+            {
+                ShowMessage("Please enter a valid pickup time window.", "alert-danger");
+                return;
+            }
+            availableFrom = DateTime.Today.Add(fromTime);
+            availableUntil = DateTime.Today.Add(untilTime);
+
+            string photoPath = SavePhotoIfProvided();
+
+            string dietaryInfo = BuildDietaryInfo();
+
+            int? preferredNgoId = null;
+            if (!string.IsNullOrEmpty(ddlPreferredNGO.SelectedValue))
+                preferredNgoId = Convert.ToInt32(ddlPreferredNGO.SelectedValue);
+
+            string insertQuery = @"
+                INSERT INTO FoodDonations
+                    (DonorID, FoodDescription, Category, DonorTypeAtPost, Quantity, Servings, PreparedOn, ExpiryTime,
+                     DietaryInfo, AdditionalNotes, PickupAddress, City, AvailableFrom, AvailableUntil,
+                     ContactPerson, ContactPhone, PackagingCondition, PreferredNGOID, PhotoPath, Status, CreatedAt)
+                VALUES
+                    (@DonorID, @FoodDescription, @Category, @DonorType, @Quantity, @Servings, @PreparedOn, @ExpiryTime,
+                     @DietaryInfo, @Notes, @PickupAddress, @City, @AvailableFrom, @AvailableUntil,
+                     @ContactPerson, @ContactPhone, @Packaging, @PreferredNGOID, @PhotoPath, 'Posted', GETDATE())";
+
+            SqlParameter[] parameters = {
+                new SqlParameter("@DonorID", SessionHelper.GetUserID()),
+                new SqlParameter("@FoodDescription", txtFoodDescription.Text.Trim()),
+                new SqlParameter("@Category", ddlCategory.SelectedValue),
+                new SqlParameter("@DonorType", ddlDonorType.SelectedValue),
+                new SqlParameter("@Quantity", txtQuantity.Text.Trim() + " " + ddlUnit.SelectedValue),
+                new SqlParameter("@Servings", servings),
+                new SqlParameter("@PreparedOn", preparedOn),
+                new SqlParameter("@ExpiryTime", expiryTime),
+                new SqlParameter("@DietaryInfo", (object)dietaryInfo ?? DBNull.Value),
+                new SqlParameter("@Notes", string.IsNullOrWhiteSpace(txtNotes.Text) ? (object)DBNull.Value : txtNotes.Text.Trim()),
+                new SqlParameter("@PickupAddress", txtPickupAddress.Text.Trim()),
+                new SqlParameter("@City", ddlCity.SelectedValue),
+                new SqlParameter("@AvailableFrom", availableFrom),
+                new SqlParameter("@AvailableUntil", availableUntil),
+                new SqlParameter("@ContactPerson", txtContactPerson.Text.Trim()),
+                new SqlParameter("@ContactPhone", txtContactPhone.Text.Trim()),
+                new SqlParameter("@Packaging", ddlPackaging.SelectedValue),
+                new SqlParameter("@PreferredNGOID", (object)preferredNgoId ?? DBNull.Value),
+                new SqlParameter("@PhotoPath", (object)photoPath ?? DBNull.Value)
+            };
+
+            try
+            {
+                DBHelper.ExecuteNonQuery(insertQuery, parameters);
+                Response.Redirect("~/Donor/donor-dashboard.aspx?posted=1");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("An error occurred while posting your donation: " + ex.Message, "alert-danger");
+            }
+        }
+
+        private string SavePhotoIfProvided()
+        {
+            if (!fuPhoto.HasFile) return null;
+
+            string ext = Path.GetExtension(fuPhoto.FileName).ToLower();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+            {
+                ShowMessage("Photo must be a JPG or PNG file. Donation was posted without it.", "alert-warning");
+                return null;
+            }
+            if (fuPhoto.PostedFile.ContentLength > 5 * 1024 * 1024)
+            {
+                ShowMessage("Photo must be under 5MB. Donation was posted without it.", "alert-warning");
+                return null;
+            }
+
+            string fileName = Guid.NewGuid().ToString("N") + ext;
+            string relativePath = "~/uploads/images/" + fileName;
+            fuPhoto.SaveAs(Server.MapPath(relativePath));
+            return "/uploads/images/" + fileName;
+        }
+
+        private string BuildDietaryInfo()
+        {
+            var tags = new StringBuilder();
+            if (chkHalal.Checked) tags.Append("Halal,");
+            if (chkVegetarian.Checked) tags.Append("Vegetarian,");
+            if (chkVegan.Checked) tags.Append("Vegan,");
+            if (chkGlutenFree.Checked) tags.Append("Gluten-Free,");
+            if (chkNuts.Checked) tags.Append("Contains Nuts,");
+
+            return tags.Length > 0 ? tags.ToString().TrimEnd(',') : null;
+        }
+
+        private void ShowMessage(string message, string cssClass)
+        {
+            lblMessage.Text = message;
+            lblMessage.CssClass = "alert " + cssClass;
+            lblMessage.Visible = true;
         }
     }
 }

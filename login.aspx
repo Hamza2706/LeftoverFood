@@ -164,7 +164,7 @@
                                 InitialValue=""
                                 ErrorMessage="Please select a role"
                                 CssClass="validator-msg"
-                                Display="Dynamic" />
+                                Display="Dynamic" ValidationGroup="RegisterGroup" />
                         </div>
                         <div class="fb-form-group" id="orgField" style="display: none">
                             <label>Organization Name</label>

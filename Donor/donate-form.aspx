@@ -11,7 +11,7 @@
   <link href="../assets/css/style.css" rel="stylesheet"/>
 </head>
 <body style="background:var(--cream)">
-
+<form id="form1" runat="server">
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg fb-navbar">
   <div class="container">
@@ -32,6 +32,8 @@
       <h1 style="font-size:2.2rem;margin-bottom:.5rem">Donate Leftover Food</h1>
       <p class="text-muted">Fill in the details below so an NGO can review and arrange pickup of your surplus food.</p>
     </div>
+
+    <asp:Label ID="lblMessage" runat="server" Visible="false" CssClass="alert" Style="display:block;margin-bottom:1.5rem" />
 
     <!-- Progress Steps -->
     <div class="d-flex align-items-center justify-content-center mb-5 gap-0">
@@ -66,86 +68,100 @@
             <div class="col-12">
               <div class="fb-form-group mb-0">
                 <label>Food Type / Description <span style="color:var(--red)">*</span></label>
-                <input type="text" class="fb-input" placeholder="e.g. Biryani, Naan, Dal, Salad, Mixed Cuisine..."/>
+                <asp:TextBox ID="txtFoodDescription" runat="server" CssClass="fb-input" placeholder="e.g. Biryani, Naan, Dal, Salad, Mixed Cuisine..." />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtFoodDescription" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
                 <div class="form-hint">Be specific so NGOs can plan distribution properly</div>
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Food Category <span style="color:var(--red)">*</span></label>
-                <select class="fb-input fb-select">
-                  <option value="">Select category...</option>
-                  <option>Cooked Meals</option>
-                  <option>Bakery Items</option>
-                  <option>Raw Vegetables/Fruits</option>
-                  <option>Packaged Food</option>
-                  <option>Beverages</option>
-                  <option>Other</option>
-                </select>
+                <asp:DropDownList ID="ddlCategory" runat="server" CssClass="fb-input fb-select">
+                  <asp:ListItem Value="">Select category...</asp:ListItem>
+                  <asp:ListItem>Cooked Meals</asp:ListItem>
+                  <asp:ListItem>Bakery Items</asp:ListItem>
+                  <asp:ListItem>Raw Vegetables/Fruits</asp:ListItem>
+                  <asp:ListItem>Packaged Food</asp:ListItem>
+                  <asp:ListItem>Beverages</asp:ListItem>
+                  <asp:ListItem>Other</asp:ListItem>
+                </asp:DropDownList>
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlCategory" InitialValue="" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Donor Type <span style="color:var(--red)">*</span></label>
-                <select class="fb-input fb-select">
-                  <option value="">Select...</option>
-                  <option>Restaurant</option>
-                  <option>Hotel / Catering</option>
-                  <option>Household</option>
-                  <option>Corporate Event</option>
-                  <option>Wedding / Function</option>
-                  <option>Other</option>
-                </select>
+                <asp:DropDownList ID="ddlDonorType" runat="server" CssClass="fb-input fb-select">
+                  <asp:ListItem Value="">Select...</asp:ListItem>
+                  <asp:ListItem>Restaurant</asp:ListItem>
+                  <asp:ListItem>Hotel / Catering</asp:ListItem>
+                  <asp:ListItem>Household</asp:ListItem>
+                  <asp:ListItem>Corporate Event</asp:ListItem>
+                  <asp:ListItem>Wedding / Function</asp:ListItem>
+                  <asp:ListItem>Other</asp:ListItem>
+                </asp:DropDownList>
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlDonorType" InitialValue="" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Quantity (Plates / Kg) <span style="color:var(--red)">*</span></label>
                 <div style="display:flex;gap:.5rem">
-                  <input type="number" class="fb-input" placeholder="e.g. 50" style="flex:2"/>
-                  <select class="fb-input fb-select" style="flex:1">
-                    <option>Plates</option>
-                    <option>Kg</option>
-                    <option>Liters</option>
-                    <option>Boxes</option>
-                  </select>
+                  <asp:TextBox ID="txtQuantity" runat="server" CssClass="fb-input" placeholder="e.g. 50" Style="flex:2" TextMode="Number" />
+                  <asp:DropDownList ID="ddlUnit" runat="server" CssClass="fb-input fb-select" Style="flex:1">
+                    <asp:ListItem>Plates</asp:ListItem>
+                    <asp:ListItem>Kg</asp:ListItem>
+                    <asp:ListItem>Liters</asp:ListItem>
+                    <asp:ListItem>Boxes</asp:ListItem>
+                  </asp:DropDownList>
                 </div>
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtQuantity" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Servings (Approx.) <span style="color:var(--red)">*</span></label>
-                <input type="number" class="fb-input" placeholder="How many people can this feed?"/>
+                <asp:TextBox ID="txtServings" runat="server" CssClass="fb-input" placeholder="How many people can this feed?" TextMode="Number" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtServings" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Food Prepared On <span style="color:var(--red)">*</span></label>
-                <input type="date" class="fb-input"/>
+                <asp:TextBox ID="txtPreparedOn" runat="server" CssClass="fb-input" TextMode="Date" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPreparedOn" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Best Before (Expiry) <span style="color:var(--red)">*</span></label>
-                <input type="datetime-local" class="fb-input"/>
+                <asp:TextBox ID="txtExpiryTime" runat="server" CssClass="fb-input" TextMode="DateTimeLocal" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtExpiryTime" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="fb-form-group mb-0">
+                <label>Photo (Optional)</label>
+                <asp:FileUpload ID="fuPhoto" runat="server" CssClass="fb-input" />
+                <div class="form-hint">JPG or PNG, max 5MB</div>
               </div>
             </div>
             <div class="col-12">
               <div class="fb-form-group mb-0">
                 <label>Dietary Information</label>
                 <div class="d-flex flex-wrap gap-2 mt-1">
-                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><input type="checkbox" class="form-check-input m-0"/> Halal</label>
-                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><input type="checkbox" class="form-check-input m-0"/> Vegetarian</label>
-                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><input type="checkbox" class="form-check-input m-0"/> Vegan</label>
-                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><input type="checkbox" class="form-check-input m-0"/> Gluten-Free</label>
-                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><input type="checkbox" class="form-check-input m-0"/> Contains Nuts</label>
+                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><asp:CheckBox ID="chkHalal" runat="server" CssClass="m-0" /> Halal</label>
+                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><asp:CheckBox ID="chkVegetarian" runat="server" CssClass="m-0" /> Vegetarian</label>
+                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><asp:CheckBox ID="chkVegan" runat="server" CssClass="m-0" /> Vegan</label>
+                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><asp:CheckBox ID="chkGlutenFree" runat="server" CssClass="m-0" /> Gluten-Free</label>
+                  <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:400;cursor:pointer;background:var(--cream);border:1.5px solid var(--sand);border-radius:50px;padding:.25rem .85rem"><asp:CheckBox ID="chkNuts" runat="server" CssClass="m-0" /> Contains Nuts</label>
                 </div>
               </div>
             </div>
             <div class="col-12">
               <div class="fb-form-group mb-0">
                 <label>Additional Notes</label>
-                <textarea class="fb-input fb-textarea" placeholder="Any special handling instructions, storage requirements, or additional info..."></textarea>
+                <asp:TextBox ID="txtNotes" runat="server" CssClass="fb-input fb-textarea" TextMode="MultiLine" placeholder="Any special handling instructions, storage requirements, or additional info..." />
               </div>
             </div>
           </div>
@@ -161,53 +177,59 @@
             <div class="col-12">
               <div class="fb-form-group mb-0">
                 <label>Pickup Address <span style="color:var(--red)">*</span></label>
-                <input type="text" class="fb-input" placeholder="Full address where food can be picked up..."/>
+                <asp:TextBox ID="txtPickupAddress" runat="server" CssClass="fb-input" placeholder="Full address where food can be picked up..." />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtPickupAddress" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-4">
               <div class="fb-form-group mb-0">
                 <label>City <span style="color:var(--red)">*</span></label>
-                <select class="fb-input fb-select">
-                  <option value="">Select...</option>
-                  <option>Karachi</option><option>Lahore</option><option>Islamabad</option>
-                  <option>Rawalpindi</option><option>Peshawar</option><option>Quetta</option>
-                  <option>Multan</option><option>Faisalabad</option>
-                </select>
+                <asp:DropDownList ID="ddlCity" runat="server" CssClass="fb-input fb-select">
+                  <asp:ListItem Value="">Select...</asp:ListItem>
+                  <asp:ListItem>Karachi</asp:ListItem><asp:ListItem>Lahore</asp:ListItem><asp:ListItem>Islamabad</asp:ListItem>
+                  <asp:ListItem>Rawalpindi</asp:ListItem><asp:ListItem>Peshawar</asp:ListItem><asp:ListItem>Quetta</asp:ListItem>
+                  <asp:ListItem>Multan</asp:ListItem><asp:ListItem>Faisalabad</asp:ListItem>
+                </asp:DropDownList>
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlCity" InitialValue="" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-4">
               <div class="fb-form-group mb-0">
                 <label>Available From <span style="color:var(--red)">*</span></label>
-                <input type="time" class="fb-input"/>
+                <asp:TextBox ID="txtAvailableFrom" runat="server" CssClass="fb-input" TextMode="Time" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtAvailableFrom" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-4">
               <div class="fb-form-group mb-0">
                 <label>Available Until <span style="color:var(--red)">*</span></label>
-                <input type="time" class="fb-input"/>
+                <asp:TextBox ID="txtAvailableUntil" runat="server" CssClass="fb-input" TextMode="Time" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtAvailableUntil" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Contact Person <span style="color:var(--red)">*</span></label>
-                <input type="text" class="fb-input" placeholder="Name of person at pickup location"/>
+                <asp:TextBox ID="txtContactPerson" runat="server" CssClass="fb-input" placeholder="Name of person at pickup location" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtContactPerson" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-sm-6">
               <div class="fb-form-group mb-0">
                 <label>Contact Phone <span style="color:var(--red)">*</span></label>
-                <input type="tel" class="fb-input" placeholder="+92 300 0000000"/>
+                <asp:TextBox ID="txtContactPhone" runat="server" CssClass="fb-input" TextMode="Phone" placeholder="+92 300 0000000" />
+                <asp:RequiredFieldValidator runat="server" ControlToValidate="txtContactPhone" ErrorMessage="Required" CssClass="text-danger" Display="Dynamic" Style="font-size:.78rem" />
               </div>
             </div>
             <div class="col-12">
               <div class="fb-form-group mb-0">
                 <label>Packaging Condition</label>
-                <select class="fb-input fb-select">
-                  <option>Properly Packaged</option>
-                  <option>Loosely Packed – Needs Containers</option>
-                  <option>Refrigerated</option>
-                  <option>Hot / Freshly Cooked</option>
-                </select>
+                <asp:DropDownList ID="ddlPackaging" runat="server" CssClass="fb-input fb-select">
+                  <asp:ListItem>Properly Packaged</asp:ListItem>
+                  <asp:ListItem>Loosely Packed – Needs Containers</asp:ListItem>
+                  <asp:ListItem>Refrigerated</asp:ListItem>
+                  <asp:ListItem>Hot / Freshly Cooked</asp:ListItem>
+                </asp:DropDownList>
               </div>
             </div>
           </div>
@@ -221,23 +243,17 @@
           </div>
           <div class="fb-form-group mb-2">
             <label>Select Preferred NGO</label>
-            <select class="fb-input fb-select">
-              <option value="">Let the system auto-assign (Recommended)</option>
-              <option>Edhi Foundation – Karachi</option>
-              <option>Saylani Welfare Trust – Lahore</option>
-              <option>Al-Khidmat Foundation – Islamabad</option>
-              <option>Akhuwat Foundation – Lahore</option>
-              <option>JDC Foundation – Karachi</option>
-            </select>
+            <asp:DropDownList ID="ddlPreferredNGO" runat="server" CssClass="fb-input fb-select">
+              <asp:ListItem Value="">Let the system auto-assign (Recommended)</asp:ListItem>
+            </asp:DropDownList>
           </div>
-          <div class="form-hint">If no preference, the nearest available verified NGO will be assigned automatically.</div>
+          <div class="form-hint">If no preference, any verified NGO will be able to request this donation once approved.</div>
         </div>
 
         <!-- Submit -->
         <div class="d-flex gap-3 flex-wrap">
-          <button class="btn-green px-4 py-2" onclick="fbToast('Donation posted! NGOs have been notified.')"><i class="bi bi-check2-circle me-2"></i>Submit Donation</button>
-          <button class="btn-outline-green px-4 py-2">Save as Draft</button>
-          <a href="donor-dashboard.html" class="btn-sm-outline px-4 py-2" style="display:inline-flex;align-items:center">Cancel</a>
+          <asp:Button ID="btnSubmit" runat="server" CssClass="btn-green px-4 py-2" Text="Submit Donation" OnClick="btnSubmit_Click" />
+          <a href="donor-dashboard.aspx" class="btn-sm-outline px-4 py-2" style="display:inline-flex;align-items:center">Cancel</a>
         </div>
 
       </div>
@@ -267,8 +283,9 @@
     </div>
   </div>
 </div>
+</form>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/main.js"></script>
+<script src="../assets/js/main.js"></script>
 </body>
 </html>
