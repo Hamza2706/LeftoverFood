@@ -127,6 +127,8 @@ namespace LeftoverFood.Admin
                             new SqlParameter("@Note", string.IsNullOrWhiteSpace(txtNote.Text) ? (object)DBNull.Value : txtNote.Text.Trim())
                         });
                     ShowMessage("Volunteer assigned. They'll see this pickup on their dashboard.", "alert-success");
+
+                    NotifyAssignment(donationId, volunteerId);
                 }
                 else
                 {
@@ -137,6 +139,53 @@ namespace LeftoverFood.Admin
             BindStats();
             BindNeedsAssignment();
             BindActiveDeliveries();
+        }
+
+        /// <summary>
+        /// Tell all three parties an assignment just happened: the volunteer
+        /// who has to act, and the donor and NGO who are waiting on it.
+        ///
+        /// One query pulls everyone involved — the donor from FoodDonations and
+        /// the NGO from the accepted FoodRequests row — so this costs a single
+        /// round trip rather than three.
+        /// </summary>
+        private void NotifyAssignment(int donationId, int volunteerId)
+        {
+            DataTable d = DBHelper.ExecuteQuery(
+                @"SELECT d.DonorID, d.FoodDescription, d.PickupAddress, d.City, r.NGOID
+                  FROM FoodDonations d
+                  LEFT JOIN FoodRequests r ON r.DonationID = d.DonationID AND r.Status = 'Accepted'
+                  WHERE d.DonationID = @DonationID",
+                new SqlParameter[] { new SqlParameter("@DonationID", donationId) });
+
+            if (d.Rows.Count == 0) return;
+
+            DataRow row = d.Rows[0];
+            string food = Convert.ToString(row["FoodDescription"]);
+            string pickup = Convert.ToString(row["PickupAddress"]) + ", " + Convert.ToString(row["City"]);
+
+            // The volunteer — the only one with something to do next.
+            NotificationService.Notify(volunteerId,
+                "You've been assigned a pickup",
+                "You have been assigned to collect \"" + food + "\" from " + pickup
+                + ". Open your dashboard to confirm the pickup once you have it.",
+                NotifyType.Delivery, NotifyEvent.VolunteerAssigned,
+                "~/Volunteer/volunteer-dashboard.aspx");
+
+            NotificationService.Notify(Convert.ToInt32(row["DonorID"]),
+                "A volunteer is on the way",
+                "A volunteer has been assigned to collect your donation \"" + food + "\".",
+                NotifyType.Delivery, NotifyEvent.VolunteerAssigned,
+                "~/Donor/track-donation.aspx?id=" + donationId);
+
+            if (row["NGOID"] != DBNull.Value)
+            {
+                NotificationService.Notify(Convert.ToInt32(row["NGOID"]),
+                    "A volunteer has been assigned",
+                    "A volunteer has been assigned to collect \"" + food + "\" for your organisation.",
+                    NotifyType.Delivery, NotifyEvent.VolunteerAssigned,
+                    "~/NGO/ngo-active-requests.aspx");
+            }
         }
 
         private void ShowMessage(string message, string cssClass)

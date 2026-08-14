@@ -16,7 +16,7 @@ namespace LeftoverFood.NGO
 
         protected global::System.Web.UI.WebControls.ContentPlaceHolder NGOHeadContent;
 
-        protected global::System.Web.UI.WebControls.LinkButton btnLogout;
+        protected global::LeftoverFood.Controls.RoleSidebar roleSidebar;
 
         protected global::System.Web.UI.WebControls.ContentPlaceHolder NGOPageHeading;
 

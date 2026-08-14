@@ -62,13 +62,40 @@ namespace LeftoverFood.Admin
                     "UPDATE Users SET IsVerified = 1 WHERE UserID = @UserID",
                     new SqlParameter[] { new SqlParameter("@UserID", userId) });
                 ShowMessage("User approved. They can now log in.", "alert-success");
+
+                // Account-status changes pass a null event key: they are
+                // mandatory and cannot be switched off in preferences.
+                NotificationService.Notify(userId,
+                    "Your FoodBridge account has been approved",
+                    "Good news — an administrator has verified your account. You can now sign in and start using FoodBridge.",
+                    NotifyType.System, null, "~/Login.aspx");
             }
             else if (e.CommandName == "Reject")
             {
+                // Reject deletes the row (Phase 1 design decision), so the
+                // recipient must be looked up *before* the delete — and there
+                // is no user left to own an in-app notification afterwards, so
+                // this is the one place that emails directly instead of via
+                // Notify().
+                DataTable who = DBHelper.ExecuteQuery(
+                    "SELECT Email, FullName FROM Users WHERE UserID = @UserID AND IsVerified = 0",
+                    new SqlParameter[] { new SqlParameter("@UserID", userId) });
+
                 DBHelper.ExecuteNonQuery(
                     "DELETE FROM Users WHERE UserID = @UserID AND IsVerified = 0",
                     new SqlParameter[] { new SqlParameter("@UserID", userId) });
                 ShowMessage("Registration rejected and removed.", "alert-danger");
+
+                if (who.Rows.Count > 0)
+                {
+                    NotificationService.SendEmail(
+                        Convert.ToString(who.Rows[0]["Email"]),
+                        "Your FoodBridge registration was not approved",
+                        "<p>Dear " + Server.HtmlEncode(Convert.ToString(who.Rows[0]["FullName"])) + ",</p>"
+                        + "<p>Thank you for your interest in FoodBridge. After review, your registration "
+                        + "was not approved and the request has been closed. You are welcome to register "
+                        + "again with complete and accurate details.</p>");
+                }
             }
 
             BindStats();
@@ -92,6 +119,15 @@ namespace LeftoverFood.Admin
                     "UPDATE Users SET IsActive = 0 WHERE UserID = @UserID",
                     new SqlParameter[] { new SqlParameter("@UserID", userId) });
                 ShowMessage("User suspended.", "alert-success");
+
+                // The user row survives a ban, so this can be a normal
+                // notification — they just cannot sign in to read the in-app
+                // copy until reinstated, which is what the email is for.
+                NotificationService.Notify(userId,
+                    "Your FoodBridge account has been suspended",
+                    "An administrator has suspended your account. You will not be able to sign in until it is reinstated. "
+                    + "Please contact the FoodBridge team if you believe this is a mistake.",
+                    NotifyType.System, null);
             }
             else if (e.CommandName == "Unban")
             {
@@ -99,6 +135,11 @@ namespace LeftoverFood.Admin
                     "UPDATE Users SET IsActive = 1 WHERE UserID = @UserID",
                     new SqlParameter[] { new SqlParameter("@UserID", userId) });
                 ShowMessage("User reinstated.", "alert-success");
+
+                NotificationService.Notify(userId,
+                    "Your FoodBridge account has been reinstated",
+                    "Your account has been reinstated by an administrator. You can sign in again.",
+                    NotifyType.System, null, "~/Login.aspx");
             }
 
             BindAllUsers();

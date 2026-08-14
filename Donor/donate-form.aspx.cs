@@ -97,7 +97,8 @@ namespace LeftoverFood.Donor
                 VALUES
                     (@DonorID, @FoodDescription, @Category, @DonorType, @Quantity, @Servings, @PreparedOn, @ExpiryTime,
                      @DietaryInfo, @Notes, @PickupAddress, @City, @AvailableFrom, @AvailableUntil,
-                     @ContactPerson, @ContactPhone, @Packaging, @PreferredNGOID, @PhotoPath, 'Posted', GETDATE())";
+                     @ContactPerson, @ContactPhone, @Packaging, @PreferredNGOID, @PhotoPath, 'Posted', GETDATE());
+                SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
             SqlParameter[] parameters = {
                 new SqlParameter("@DonorID", SessionHelper.GetUserID()),
@@ -123,7 +124,29 @@ namespace LeftoverFood.Donor
 
             try
             {
-                DBHelper.ExecuteNonQuery(insertQuery, parameters);
+                // SCOPE_IDENTITY() gives us the new DonationID so the
+                // notifications below can deep-link to this specific donation.
+                object newId = DBHelper.ExecuteScalar(insertQuery, parameters);
+                int donationId = newId == null || newId == DBNull.Value ? 0 : Convert.ToInt32(newId);
+
+                string food = txtFoodDescription.Text.Trim();
+
+                // Confirmation to the donor...
+                NotificationService.Notify(SessionHelper.GetUserID(),
+                    "Your donation has been posted",
+                    "Your donation \"" + food + "\" is now posted and waiting for admin approval. "
+                    + "You'll be notified as soon as it is reviewed.",
+                    NotifyType.System, NotifyEvent.DonationPosted,
+                    donationId > 0 ? "~/Donor/track-donation.aspx?id=" + donationId : null);
+
+                // ...and a heads-up to every admin that the approval queue moved.
+                NotificationService.NotifyRole("Admin",
+                    "New donation awaiting approval",
+                    SessionHelper.GetFullName() + " posted \"" + food + "\" in " + ddlCity.SelectedValue
+                    + ". It is waiting in the approval queue.",
+                    NotifyType.Approval, NotifyEvent.DonationPosted,
+                    "~/Admin/food-approvals.aspx");
+
                 Response.Redirect("~/Donor/donor-dashboard.aspx?posted=1");
             }
             catch (Exception ex)

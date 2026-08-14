@@ -9,9 +9,131 @@
 
 namespace LeftoverFood.Donor
 {
-
-
     public partial class notifications
     {
+        /// <summary>
+        /// pnlMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlMessage;
+
+        /// <summary>
+        /// lblMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblMessage;
+
+        /// <summary>
+        /// txtEmail control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtEmail;
+
+        /// <summary>
+        /// chkEmailDonationPosted control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailDonationPosted;
+
+        /// <summary>
+        /// chkEmailDonationApproved control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailDonationApproved;
+
+        /// <summary>
+        /// chkEmailNgoAccepted control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailNgoAccepted;
+
+        /// <summary>
+        /// chkEmailVolunteerAssigned control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailVolunteerAssigned;
+
+        /// <summary>
+        /// chkEmailFoodPickedUp control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailFoodPickedUp;
+
+        /// <summary>
+        /// chkEmailDeliveryConfirmed control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailDeliveryConfirmed;
+
+        /// <summary>
+        /// chkEmailExpiryWarning control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailExpiryWarning;
+
+        /// <summary>
+        /// chkEmailRatingReceived control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailRatingReceived;
+
+        /// <summary>
+        /// chkEmailMonthlyImpact control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailMonthlyImpact;
+
+        /// <summary>
+        /// chkEmailEmergencyAlert control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkEmailEmergencyAlert;
+
+        /// <summary>
+        /// chkInAppStatusUpdates control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkInAppStatusUpdates;
+
+        /// <summary>
+        /// chkInAppNewMessages control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkInAppNewMessages;
+
+        /// <summary>
+        /// chkInAppBadgeAlerts control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkInAppBadgeAlerts;
+
+        /// <summary>
+        /// btnSave control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnSave;
+
+        /// <summary>
+        /// litEmailPreview control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litEmailPreview;
+
+        /// <summary>
+        /// litSmtpHost control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litSmtpHost;
+
+        /// <summary>
+        /// litSmtpPort control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litSmtpPort;
+
+        /// <summary>
+        /// litSmtpFrom control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litSmtpFrom;
+
+        /// <summary>
+        /// litSmtpStatus control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litSmtpStatus;
+
+        /// <summary>
+        /// btnTestEmail control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnTestEmail;
+
+        /// <summary>
+        /// rptRecent control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptRecent;
+
+        /// <summary>
+        /// pnlNoRecent control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoRecent;
     }
 }

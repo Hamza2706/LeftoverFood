@@ -16,7 +16,7 @@ namespace LeftoverFood.Volunteer
 
         protected global::System.Web.UI.WebControls.ContentPlaceHolder VolunteerHeadContent;
 
-        protected global::System.Web.UI.WebControls.LinkButton btnLogout;
+        protected global::LeftoverFood.Controls.RoleSidebar roleSidebar;
 
         protected global::System.Web.UI.WebControls.ContentPlaceHolder VolunteerPageHeading;
 

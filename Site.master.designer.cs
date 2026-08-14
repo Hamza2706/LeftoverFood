@@ -20,6 +20,10 @@ namespace LeftoverFood
 
         protected global::System.Web.UI.WebControls.ContentPlaceHolder PageHeading;
 
+        protected global::System.Web.UI.HtmlControls.HtmlAnchor notifBell;
+
+        protected global::System.Web.UI.WebControls.Literal litBellBadge;
+
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl topbarAvatar;
 
         protected global::System.Web.UI.WebControls.ContentPlaceHolder MainContent;

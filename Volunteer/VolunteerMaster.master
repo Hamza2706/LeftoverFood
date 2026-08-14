@@ -5,29 +5,7 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="SidebarContent" runat="server">
-  <aside class="fb-sidebar" id="fbSidebar">
-    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
-    <nav class="fb-sidebar-nav">
-      <div class="fb-sidebar-section">Main</div>
-      <a class="fb-nav-item <%= IsActive("volunteer-dashboard.aspx") %>" href="<%= ResolveUrl("~/Volunteer/volunteer-dashboard.aspx") %>"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-list-task"></i> My Tasks</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-clock-history"></i> Completed</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-geo-alt-fill"></i> Nearby Pickups</a>
-      <div class="fb-sidebar-section">Activity</div>
-      <a class="fb-nav-item" href="#"><i class="bi bi-bell-fill"></i> Notifications</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-chat-dots-fill"></i> Messages</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-trophy-fill"></i> My Points</a>
-      <div class="fb-sidebar-section">Account</div>
-      <a class="fb-nav-item" href="#"><i class="bi bi-person-fill"></i> Profile</a>
-      <asp:LinkButton runat="server" ID="btnLogout" CssClass="fb-nav-item" Style="color:var(--red)" OnClick="btnLogout_Click"><i class="bi bi-box-arrow-left"></i> Logout</asp:LinkButton>
-    </nav>
-    <div class="fb-sidebar-footer">
-      <div class="fb-user-chip">
-        <div class="fb-avatar" style="background:var(--blue-light);color:var(--blue)"><%= LeftoverFoodSystem.SessionHelper.Initials(LeftoverFoodSystem.SessionHelper.GetFullName()) %></div>
-        <div><div class="name"><%= LeftoverFoodSystem.SessionHelper.GetFullName() %></div><div class="role"><span class="badge-status badge-role-vol px-2">Volunteer</span></div></div>
-      </div>
-    </div>
-  </aside>
+  <fb:RoleSidebar runat="server" ID="roleSidebar" />
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="PageHeading" runat="server">

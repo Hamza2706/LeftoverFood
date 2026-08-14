@@ -118,6 +118,38 @@ namespace LeftoverFood.NGO
                     });
 
                 ShowMessage(rows > 0 ? "Receipt confirmed. Thanks for closing the loop!" : "This request was already confirmed.", rows > 0 ? "alert-success" : "alert-warning");
+
+                // The confirming UPDATE is idempotent (ActualQuantityReceived
+                // IS NULL), so rows == 0 means it was already confirmed and the
+                // donor was already thanked — don't send a second time.
+                if (rows > 0)
+                {
+                    DataTable d = DBHelper.ExecuteQuery(
+                        @"SELECT d.DonationID, d.DonorID, d.FoodDescription
+                          FROM FoodRequests r
+                          JOIN FoodDonations d ON d.DonationID = r.DonationID
+                          WHERE r.RequestID = @RequestID AND r.NGOID = @NGOID",
+                        new SqlParameter[]
+                        {
+                            new SqlParameter("@RequestID", requestId),
+                            new SqlParameter("@NGOID", SessionHelper.GetUserID())
+                        });
+
+                    if (d.Rows.Count > 0)
+                    {
+                        // Closing the loop: the donor finds out their food
+                        // actually reached people, which is the whole point.
+                        NotificationService.Notify(
+                            Convert.ToInt32(d.Rows[0]["DonorID"]),
+                            "Your donation was received",
+                            SessionHelper.GetFullName() + " has confirmed receipt of your donation \""
+                            + Convert.ToString(d.Rows[0]["FoodDescription"])
+                            + "\" (" + txtQty.Text.Trim() + ", condition: " + ddlCondition.SelectedValue
+                            + "). Thank you for reducing food waste.",
+                            NotifyType.Delivery, NotifyEvent.DeliveryConfirmed,
+                            "~/Donor/track-donation.aspx?id=" + Convert.ToInt32(d.Rows[0]["DonationID"]));
+                    }
+                }
             }
 
             BindStats();

@@ -82,6 +82,15 @@ namespace LeftoverFood.Admin
                         new SqlParameter("@DonationID", donationId)
                     });
                 ShowMessage(rows > 0 ? "Donation approved. NGOs can now request it." : "This donation was already processed.", rows > 0 ? "alert-success" : "alert-warning");
+
+                // Only notify when the UPDATE actually changed something —
+                // rows == 0 means another admin already processed it, and
+                // notifying then would send a duplicate.
+                if (rows > 0)
+                    NotifyDonor(donationId,
+                        "Your donation has been approved",
+                        "has been approved by an administrator and is now visible to NGOs. "
+                        + "You'll be notified when an NGO accepts it.");
             }
             else if (e.CommandName == "Reject")
             {
@@ -94,11 +103,39 @@ namespace LeftoverFood.Admin
                         new SqlParameter("@DonationID", donationId)
                     });
                 ShowMessage(rows > 0 ? "Donation rejected." : "This donation was already processed.", rows > 0 ? "alert-danger" : "alert-warning");
+
+                if (rows > 0)
+                    NotifyDonor(donationId,
+                        "Your donation was not approved",
+                        "was reviewed by an administrator and could not be approved. "
+                        + "Please check the food details and expiry time, and feel free to post again.");
             }
 
             BindStats();
             BindPending();
             BindProcessed();
+        }
+
+        /// <summary>
+        /// Notify the donor who owns a donation. Looks the donor up rather than
+        /// trusting anything from the postback, and builds the message around
+        /// the food description so the donor knows which donation it refers to.
+        /// </summary>
+        private void NotifyDonor(int donationId, string subject, string bodyTail)
+        {
+            DataTable d = DBHelper.ExecuteQuery(
+                "SELECT DonorID, FoodDescription FROM FoodDonations WHERE DonationID = @DonationID",
+                new SqlParameter[] { new SqlParameter("@DonationID", donationId) });
+
+            if (d.Rows.Count == 0) return;
+
+            NotificationService.Notify(
+                Convert.ToInt32(d.Rows[0]["DonorID"]),
+                subject,
+                "Your donation \"" + Convert.ToString(d.Rows[0]["FoodDescription"]) + "\" " + bodyTail,
+                NotifyType.Approval,
+                NotifyEvent.DonationApproved,
+                "~/Donor/track-donation.aspx?id=" + donationId);
         }
 
         private void ShowMessage(string message, string cssClass)

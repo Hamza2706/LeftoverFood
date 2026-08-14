@@ -24,7 +24,13 @@
       <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;flex:1"><asp:ContentPlaceHolder ID="PageHeading" runat="server" /></span>
       <div class="fb-topbar-actions">
         <div class="search-wrap"><i class="bi bi-search"></i><input class="fb-search" placeholder="Search..."/></div>
-        <div class="notif-btn"><i class="bi bi-bell"></i><span class="notif-dot"></span></div>
+        <%-- Phase 4: was a static bell with a permanently-lit dot. Now a real
+             link to the shared notifications page, with a live unread count. --%>
+        <a class="notif-btn" runat="server" id="notifBell" href="~/Notifications.aspx"
+           style="text-decoration:none;color:inherit">
+          <i class="bi bi-bell"></i>
+          <asp:Literal runat="server" ID="litBellBadge" />
+        </a>
         <div class="fb-avatar" runat="server" id="topbarAvatar"></div>
       </div>
     </div>

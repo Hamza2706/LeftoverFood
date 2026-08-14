@@ -75,8 +75,10 @@
     <Content Include="Admin\reports.aspx" />
     <Content Include="Admin\volunteer-assign.aspx" />
     <Content Include="assets\css\style.css" />
+    <Content Include="Controls\RoleSidebar.ascx" />
     <Content Include="assets\js\main.js" />
     <Content Include="Database\schema.sql" />
+    <Content Include="Database\phase4_notifications.sql" />
     <Content Include="Donor\DonorMaster.master" />
     <Content Include="Donor\donate-form.aspx" />
     <Content Include="Donor\donor-dashboard.aspx" />
@@ -88,6 +90,7 @@
     <Content Include="Global.asax" />
     <Content Include="index.html" />
     <Content Include="login.aspx" />
+    <Content Include="Notifications.aspx" />
     <Content Include="NGO\NGOMaster.master" />
     <Content Include="NGO\ngo-active-requests.aspx" />
     <Content Include="NGO\ngo-dashboard.aspx" />
@@ -235,6 +238,21 @@
     </Compile>
     <Compile Include="NGO\ngo-dashboard.aspx.designer.cs">
       <DependentUpon>ngo-dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\RoleSidebar.ascx.cs">
+      <DependentUpon>RoleSidebar.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\RoleSidebar.ascx.designer.cs">
+      <DependentUpon>RoleSidebar.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="NotificationService.cs" />
+    <Compile Include="Notifications.aspx.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Notifications.aspx.designer.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
     </Compile>
     <Compile Include="PasswordHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

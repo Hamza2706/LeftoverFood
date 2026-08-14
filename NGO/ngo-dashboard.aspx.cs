@@ -78,6 +78,33 @@ namespace LeftoverFood.NGO
                         new SqlParameter("@NGOID", ngoId)
                     });
                 ShowMessage("Donation accepted. A volunteer will be assigned for pickup.", "alert-success");
+
+                // Inside the rows > 0 branch, so the NGO that lost the race
+                // never triggers notifications for a donation it didn't get.
+                DataTable d = DBHelper.ExecuteQuery(
+                    "SELECT DonorID, FoodDescription FROM FoodDonations WHERE DonationID = @DonationID",
+                    new SqlParameter[] { new SqlParameter("@DonationID", donationId) });
+
+                if (d.Rows.Count > 0)
+                {
+                    string food = Convert.ToString(d.Rows[0]["FoodDescription"]);
+                    string ngoName = SessionHelper.GetFullName();
+
+                    NotificationService.Notify(
+                        Convert.ToInt32(d.Rows[0]["DonorID"]),
+                        "An NGO has accepted your donation",
+                        ngoName + " has accepted your donation \"" + food
+                        + "\". A volunteer will be assigned to collect it.",
+                        NotifyType.Approval, NotifyEvent.NgoAccepted,
+                        "~/Donor/track-donation.aspx?id=" + donationId);
+
+                    // Admins need to know a volunteer assignment is now due.
+                    NotificationService.NotifyRole("Admin",
+                        "Donation needs a volunteer",
+                        ngoName + " accepted \"" + food + "\". It now needs a volunteer assigned for pickup.",
+                        NotifyType.Delivery, NotifyEvent.NgoAccepted,
+                        "~/Admin/volunteer-assign.aspx");
+                }
             }
             else
             {

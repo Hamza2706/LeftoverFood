@@ -96,6 +96,14 @@ namespace LeftoverFood.Volunteer
                           WHERE DonationID = (SELECT DonationID FROM DeliveryAssignments WHERE AssignmentID = @AssignmentID)",
                         new SqlParameter[] { new SqlParameter("@AssignmentID", assignmentId) });
                     ShowMessage("Pickup confirmed! Head to the drop-off location.", "alert-success");
+
+                    NotifyParties(assignmentId,
+                        "Your donation has been picked up",
+                        "has been collected by volunteer " + SessionHelper.GetFullName()
+                        + " and is on its way.",
+                        "Food collected — on its way",
+                        "has been picked up by the volunteer and is on its way to you.",
+                        NotifyEvent.FoodPickedUp);
                 }
                 else
                 {
@@ -120,6 +128,13 @@ namespace LeftoverFood.Volunteer
                           WHERE DonationID = (SELECT DonationID FROM DeliveryAssignments WHERE AssignmentID = @AssignmentID)",
                         new SqlParameter[] { new SqlParameter("@AssignmentID", assignmentId) });
                     ShowMessage("Delivery confirmed! Thanks for helping out.", "alert-success");
+
+                    NotifyParties(assignmentId,
+                        "Your donation has been delivered",
+                        "has been delivered successfully. Thank you for helping reduce food waste.",
+                        "A delivery has arrived",
+                        "has been delivered to your organisation. Please confirm receipt on your Active Requests page.",
+                        NotifyEvent.DeliveryConfirmed);
                 }
                 else
                 {
@@ -130,6 +145,49 @@ namespace LeftoverFood.Volunteer
             BindStats();
             BindActiveTasks();
             BindCompleted();
+        }
+
+        /// <summary>
+        /// Notify the donor and the receiving NGO about a delivery-status
+        /// change made by this volunteer.
+        ///
+        /// Takes the assignment ID rather than the donation ID because that is
+        /// what the postback carries; the donation, donor and NGO are all
+        /// resolved from it in one query.
+        /// </summary>
+        private void NotifyParties(int assignmentId,
+                                   string donorSubject, string donorTail,
+                                   string ngoSubject, string ngoTail,
+                                   string eventKey)
+        {
+            DataTable d = DBHelper.ExecuteQuery(
+                @"SELECT d.DonationID, d.DonorID, d.FoodDescription, r.NGOID
+                  FROM DeliveryAssignments a
+                  JOIN FoodDonations d ON d.DonationID = a.DonationID
+                  LEFT JOIN FoodRequests r ON r.DonationID = d.DonationID AND r.Status = 'Accepted'
+                  WHERE a.AssignmentID = @AssignmentID",
+                new SqlParameter[] { new SqlParameter("@AssignmentID", assignmentId) });
+
+            if (d.Rows.Count == 0) return;
+
+            DataRow row = d.Rows[0];
+            int donationId = Convert.ToInt32(row["DonationID"]);
+            string food = "\"" + Convert.ToString(row["FoodDescription"]) + "\"";
+
+            NotificationService.Notify(Convert.ToInt32(row["DonorID"]),
+                donorSubject,
+                "Your donation " + food + " " + donorTail,
+                NotifyType.Delivery, eventKey,
+                "~/Donor/track-donation.aspx?id=" + donationId);
+
+            if (row["NGOID"] != DBNull.Value)
+            {
+                NotificationService.Notify(Convert.ToInt32(row["NGOID"]),
+                    ngoSubject,
+                    "The donation " + food + " " + ngoTail,
+                    NotifyType.Delivery, eventKey,
+                    "~/NGO/ngo-active-requests.aspx");
+            }
         }
 
         private void ShowMessage(string message, string cssClass)

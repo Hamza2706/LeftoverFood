@@ -5,30 +5,7 @@
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="SidebarContent" runat="server">
-  <aside class="fb-sidebar" id="fbSidebar">
-    <div class="fb-sidebar-brand"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
-    <nav class="fb-sidebar-nav">
-      <div class="fb-sidebar-section">Main</div>
-      <a class="fb-nav-item <%= IsActive("donor-dashboard.aspx") %>" href="<%= ResolveUrl("~/Donor/donor-dashboard.aspx") %>"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a class="fb-nav-item <%= IsActive("donate-form.aspx") %>" href="<%= ResolveUrl("~/Donor/donate-form.aspx") %>"><i class="bi bi-plus-circle-fill"></i> New Donation</a>
-      <a class="fb-nav-item <%= IsActive("track-donation.aspx") %>" href="<%= ResolveUrl("~/Donor/track-donation.aspx") %>"><i class="bi bi-geo-alt-fill"></i> Track Donation</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-clock-history"></i> My Donations</a>
-      <div class="fb-sidebar-section">Activity</div>
-      <a class="fb-nav-item <%= IsActive("ratings.aspx") %>" href="<%= ResolveUrl("~/Donor/ratings.aspx") %>"><i class="bi bi-star-fill"></i> Ratings & Trust</a>
-      <a class="fb-nav-item <%= IsActive("notifications.aspx") %>" href="<%= ResolveUrl("~/Donor/notifications.aspx") %>"><i class="bi bi-bell-fill"></i> Notifications</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-award-fill"></i> My Certificates</a>
-      <div class="fb-sidebar-section">Account</div>
-      <a class="fb-nav-item <%= IsActive("profile.aspx") %>" href="<%= ResolveUrl("~/Donor/profile.aspx") %>"><i class="bi bi-person-fill"></i> My Profile</a>
-      <a class="fb-nav-item" href="#"><i class="bi bi-gear-fill"></i> Settings</a>
-      <asp:LinkButton runat="server" ID="btnLogout" CssClass="fb-nav-item" Style="color:var(--red)" OnClick="btnLogout_Click"><i class="bi bi-box-arrow-left"></i> Logout</asp:LinkButton>
-    </nav>
-    <div class="fb-sidebar-footer">
-      <div class="fb-user-chip">
-        <div class="fb-avatar"><%= LeftoverFoodSystem.SessionHelper.Initials(LeftoverFoodSystem.SessionHelper.GetFullName()) %></div>
-        <div><div class="name"><%= LeftoverFoodSystem.SessionHelper.GetFullName() %></div><div class="role"><span class="badge-status badge-role-donor px-2">Donor</span></div></div>
-      </div>
-    </div>
-  </aside>
+  <fb:RoleSidebar runat="server" ID="roleSidebar" />
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="PageHeading" runat="server">
