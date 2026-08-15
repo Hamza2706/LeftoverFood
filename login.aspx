@@ -90,23 +90,32 @@
 
 
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <label style="display: flex; align-items: center; gap: .5rem; font-size: .87rem; cursor: pointer">
-                                <input type="checkbox" class="form-check-input m-0" />
-                                Remember me</label>
-                            <a href="#" style="font-size: .85rem; color: var(--green); font-weight: 600">Forgot Password?</a>
-                        </div>
+                        <%-- Removed: "Remember me" and "Forgot Password?".
+
+                             Neither did anything. The checkbox had no runat, no
+                             id and no name, so nothing could read it and
+                             login.aspx.cs never mentions it — sessions expire
+                             on the server timeout regardless of what it showed.
+                             "Forgot Password?" pointed at "#": there is no
+                             reset flow, no token table and no path for a reset
+                             email, so it promised a recovery route that does
+                             not exist. Both are features to build, not links to
+                             repoint. --%>
                         <%--<button class="btn-green w-100 py-2" style="border-radius: var(--radius-sm)" onclick="fbToast('Login successful! Redirecting...')">Sign In</button>--%>
                         <%--Error label--%>
                         <div>
                             <asp:Label ID="lblError" runat="server" ForeColor="Red" CssClass="mb-3"></asp:Label>
                         </div>
                         <asp:Button  ValidationGroup="LoginGroup"  class="btn-green w-100 py-2" Style="border-radius: var(--radius-sm)" runat="server" OnClick="btnLogin_Click" Text="Sign In"></asp:Button>
-                        <div class="divider">or continue with</div>
-                        <div class="d-flex gap-2">
-                            <button class="btn-sm-outline w-100 py-2" style="border-radius: var(--radius-sm)"><i class="bi bi-google me-1"></i>Google</button>
-                            <button class="btn-sm-outline w-100 py-2" style="border-radius: var(--radius-sm)"><i class="bi bi-facebook me-1"></i>Facebook</button>
-                        </div>
+                        <%-- Removed: the "or continue with" divider and the
+                             Google and Facebook buttons.
+
+                             There is no OAuth in this project — no provider
+                             registered, no client id or secret in Web.config,
+                             no callback handler, and PasswordHelper/login.aspx.cs
+                             only understand an email plus a PBKDF2 hash. The
+                             buttons were inert markup; the divider existed only
+                             to introduce them, so it goes with them. --%>
                         <p class="text-center mt-3" style="font-size: .85rem; color: var(--text-muted)">Don't have an account? <a href="#" class="text-success fw-600" style="font-weight: 600" onclick="document.querySelector('[data-tab=registerPanel]').click()">Register here</a></p>
                     </div>
                             <asp:Label ID="lblMessage2" runat="server" Visible="false" CssClass="alert"></asp:Label>
@@ -256,12 +265,24 @@
 
                   </div>--%>
               </div>
-                        <div class="fb-form-group">
-                            <label style="display: flex; align-items: flex-start; gap: .5rem; font-size: .85rem; cursor: pointer; font-weight: 400">
-                                <input type="checkbox" class="form-check-input mt-0 flex-shrink-0" />
-                                I agree to the <a href="#" style="color: var(--green)">Terms of Service</a> and <a href="#" style="color: var(--green)">Privacy Policy</a>
-                            </label>
-                        </div>
+                        <%-- Removed: the "I agree to the Terms of Service and
+                             Privacy Policy" consent row.
+
+                             Both documents were "#" — neither exists anywhere in
+                             this project. The checkbox behind them was worse
+                             than the links: no runat, no id, no name and no
+                             validator, so it was never read, never enforced and
+                             never recorded. btnRegister_Click does not mention
+                             it, and registration succeeded whether it was
+                             ticked or not.
+
+                             Showing an unenforced tickbox next to links to
+                             documents that do not exist is a claim about legal
+                             agreement that nothing backs, which is worse than
+                             not asking. If real terms are needed later this
+                             becomes a genuine feature: the documents, a
+                             server-side required check, and a column recording
+                             which version the account accepted. --%>
                        
                         <%--<button class="btn-green w-100 py-2" style="border-radius: var(--radius-sm)" onclick="fbToast('Account created! Please verify your email.')">Create Account</button>--%>
                         <asp:Button  ValidationGroup="RegisterGroup" runat="server"  OnClick="btnRegister_Click"  class="btn-green w-100 py-2" style="border-radius: var(--radius-sm)" Text="Create Account" />
