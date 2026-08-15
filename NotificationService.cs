@@ -26,19 +26,23 @@ namespace LeftoverFoodSystem
         public const string FoodPickedUp = "FoodPickedUp";
         public const string DeliveryConfirmed = "DeliveryConfirmed";
 
+        // --- Added in Phase 6c ---
+        // Raised by ~/Ratings.aspx when someone rates you.
+        public const string RatingReceived = "RatingReceived";
+
+        // --- Added in Phase 6a ---
+        // Raised by Admin/emergency-mode.aspx on activation and on broadcast.
+        public const string EmergencyAlert = "EmergencyAlert";
+
         // --- Declared here so the preference UI can persist them, but nothing
         //     raises these yet. Each needs a feature that does not exist:
         //       ExpiryWarning / MonthlyImpact -> a scheduler (this app is purely
         //         request-driven; there is no background job host)
-        //       RatingReceived                -> Phase 6c
-        //       EmergencyAlert                -> Phase 6a
         //       NewMessages / BadgeAlerts     -> no messaging or badge feature
         //     The settings page labels these as inactive rather than implying
         //     they work.
         public const string ExpiryWarning = "ExpiryWarning";
-        public const string RatingReceived = "RatingReceived";
         public const string MonthlyImpact = "MonthlyImpact";
-        public const string EmergencyAlert = "EmergencyAlert";
         public const string RealtimeStatus = "RealtimeStatus";
         public const string NewMessages = "NewMessages";
         public const string BadgeAlerts = "BadgeAlerts";
@@ -46,8 +50,7 @@ namespace LeftoverFoodSystem
         /// <summary>Event keys with no code path raising them yet.</summary>
         public static readonly string[] NotYetActive =
         {
-            ExpiryWarning, RatingReceived, MonthlyImpact,
-            EmergencyAlert, NewMessages, BadgeAlerts
+            ExpiryWarning, MonthlyImpact, NewMessages, BadgeAlerts
         };
 
         public static bool IsActive(string eventKey)
@@ -208,6 +211,241 @@ namespace LeftoverFoodSystem
             catch (Exception ex)
             {
                 LogError("NotifyRole(" + role + ")", ex);
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Broadcast (Phase 6a)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// The audience for one broadcast: which roles, optionally narrowed to
+        /// one city.
+        ///
+        /// A small struct rather than four loose parameters because the same
+        /// audience has to be resolved twice — once to *count* recipients for
+        /// the admin's preview, and once to actually send. Keeping it in one
+        /// place is what stops the number shown from disagreeing with the
+        /// number reached.
+        /// </summary>
+        public class BroadcastAudience
+        {
+            /// <summary>Roles to reach, e.g. { "NGO", "Volunteer" }.</summary>
+            public string[] Roles { get; set; }
+
+            /// <summary>Null or empty means every city.</summary>
+            public string City { get; set; }
+
+            /// <summary>
+            /// Whether to also reach users whose City is blank.
+            ///
+            /// This matters more than it looks. Users.City is nullable and
+            /// mostly unset in practice — when this feature was built, 24 of 28
+            /// accounts had no city on record. Filtering strictly by city would
+            /// therefore drop most of the userbase from a flood alert without
+            /// saying so. For an emergency the costly mistake is not reaching
+            /// someone, so this defaults to true and the admin sees the number
+            /// it adds before sending.
+            /// </summary>
+            public bool IncludeUnknownCity { get; set; }
+
+            public BroadcastAudience()
+            {
+                Roles = new string[0];
+                IncludeUnknownCity = true;
+            }
+        }
+
+        /// <summary>
+        /// Builds the WHERE clause and parameters selecting a broadcast's
+        /// recipients. Shared by the count and the send so the two can never
+        /// describe different sets of people.
+        ///
+        /// Roles are expanded into individually named parameters rather than
+        /// concatenated into the SQL — the values come from a dropdown today,
+        /// but a broadcast audience is exactly the kind of thing that grows a
+        /// free-text entry point later.
+        /// </summary>
+        private static string BuildAudienceFilter(BroadcastAudience audience,
+                                                  List<SqlParameter> parameters)
+        {
+            StringBuilder where = new StringBuilder(
+                " WHERE u.IsActive = 1 AND u.IsVerified = 1");
+
+            if (audience.Roles != null && audience.Roles.Length > 0)
+            {
+                List<string> names = new List<string>();
+                for (int i = 0; i < audience.Roles.Length; i++)
+                {
+                    string name = "@role" + i;
+                    names.Add(name);
+                    parameters.Add(new SqlParameter(name, audience.Roles[i]));
+                }
+                where.Append(" AND u.Role IN (").Append(string.Join(", ", names)).Append(")");
+            }
+
+            if (!string.IsNullOrWhiteSpace(audience.City))
+            {
+                parameters.Add(new SqlParameter("@city", audience.City.Trim()));
+
+                where.Append(audience.IncludeUnknownCity
+                    ? " AND (u.City = @city OR u.City IS NULL OR LTRIM(RTRIM(u.City)) = '')"
+                    : " AND u.City = @city");
+            }
+
+            return where.ToString();
+        }
+
+        /// <summary>How many people a broadcast would reach, for the preview.</summary>
+        public static int CountAudience(BroadcastAudience audience)
+        {
+            try
+            {
+                List<SqlParameter> ps = new List<SqlParameter>();
+                string where = BuildAudienceFilter(audience, ps);
+
+                object o = DBHelper.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Users u" + where, ps.ToArray());
+
+                return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
+            }
+            catch (Exception ex)
+            {
+                LogError("CountAudience", ex);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// How many of an audience have no city on record — surfaced next to
+        /// the recipient count so "including 24 users with no city set" is
+        /// visible before the admin commits, not a silent behaviour.
+        /// </summary>
+        public static int CountUnknownCity(BroadcastAudience audience)
+        {
+            try
+            {
+                // Same audience minus the city clause, then counted for blanks.
+                BroadcastAudience roleOnly = new BroadcastAudience
+                {
+                    Roles = audience.Roles,
+                    City = null,
+                    IncludeUnknownCity = true
+                };
+
+                List<SqlParameter> ps = new List<SqlParameter>();
+                string where = BuildAudienceFilter(roleOnly, ps);
+
+                object o = DBHelper.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Users u" + where +
+                    " AND (u.City IS NULL OR LTRIM(RTRIM(u.City)) = '')", ps.ToArray());
+
+                return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
+            }
+            catch (Exception ex)
+            {
+                LogError("CountUnknownCity", ex);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Fan one message out to a whole audience. Returns the number of
+        /// people reached (0 on failure — this never throws, same contract as
+        /// Notify).
+        ///
+        /// Unlike NotifyMany, which loops Notify() and therefore costs two
+        /// round trips per recipient, the in-app half is a single
+        /// INSERT..SELECT. A broadcast is the one notification path where the
+        /// recipient list is genuinely large, and 2N round trips for a few
+        /// hundred users is the difference between an instant postback and a
+        /// visibly hanging one.
+        ///
+        /// SCALING LIMIT — email is still one message per recipient, sent
+        /// synchronously on the admin's request thread, with SendEmail's 15s
+        /// timeout each. With SMTP switched on, a broadcast to a few hundred
+        /// unreachable addresses could exceed the request timeout. That is
+        /// acceptable at this project's scale and is what the roadmap chose
+        /// deliberately, but it is the reason the admin page shows the
+        /// recipient count and warns before sending rather than just firing.
+        /// A real fix is a queue plus a worker, which this app has no host for.
+        /// </summary>
+        public static int NotifyBroadcast(BroadcastAudience audience, string subject,
+                                          string message, string type,
+                                          string eventKey = null, string linkUrl = null)
+        {
+            try
+            {
+                List<SqlParameter> countParams = new List<SqlParameter>();
+                string where = BuildAudienceFilter(audience, countParams);
+
+                int reached = CountAudience(audience);
+                if (reached == 0) return 0;
+
+                // --- In-app, in one statement -----------------------------
+                // The LEFT JOIN mirrors Notify()'s per-user preference check:
+                // no preference row means opted in, so only real opt-outs are
+                // excluded. A null event key is mandatory and skips the check
+                // entirely.
+                List<SqlParameter> insertParams = new List<SqlParameter>();
+                foreach (SqlParameter p in countParams)
+                    insertParams.Add(new SqlParameter(p.ParameterName, p.Value));
+
+                insertParams.Add(new SqlParameter("@Message", Truncate(message, 500)));
+                insertParams.Add(new SqlParameter("@Type", type ?? NotifyType.System));
+                insertParams.Add(new SqlParameter("@LinkUrl", (object)linkUrl ?? DBNull.Value));
+                insertParams.Add(new SqlParameter("@EventKey", (object)eventKey ?? DBNull.Value));
+
+                string prefClause = eventKey == null
+                    ? ""
+                    : " AND ISNULL(p.InAppEnabled, 1) = 1";
+
+                DBHelper.ExecuteNonQuery(
+                    @"INSERT INTO Notifications (UserID, Message, [Type], LinkUrl)
+                      SELECT u.UserID, @Message, @Type, @LinkUrl
+                        FROM Users u
+                        LEFT JOIN NotificationPreferences p
+                               ON p.UserID = u.UserID AND p.EventKey = @EventKey"
+                    + where + prefClause,
+                    insertParams.ToArray());
+
+                // --- Email, one at a time ---------------------------------
+                // Skipped entirely when SMTP is off, which is the shipped
+                // default, so the loop below normally does not run at all.
+                if (SmtpConfigured)
+                {
+                    List<SqlParameter> mailParams = new List<SqlParameter>();
+                    foreach (SqlParameter p in countParams)
+                        mailParams.Add(new SqlParameter(p.ParameterName, p.Value));
+                    mailParams.Add(new SqlParameter("@EventKey", (object)eventKey ?? DBNull.Value));
+
+                    string emailPref = eventKey == null
+                        ? ""
+                        : " AND ISNULL(p.EmailEnabled, 1) = 1";
+
+                    DataTable recipients = DBHelper.ExecuteQuery(
+                        @"SELECT u.Email, u.FullName
+                            FROM Users u
+                            LEFT JOIN NotificationPreferences p
+                                   ON p.UserID = u.UserID AND p.EventKey = @EventKey"
+                        + where + emailPref +
+                        " AND u.Email IS NOT NULL AND LTRIM(RTRIM(u.Email)) <> ''",
+                        mailParams.ToArray());
+
+                    foreach (DataRow r in recipients.Rows)
+                    {
+                        SendEmail(Convert.ToString(r["Email"]), subject,
+                                  BuildHtmlBody(Convert.ToString(r["FullName"]),
+                                                subject, message, linkUrl));
+                    }
+                }
+
+                return reached;
+            }
+            catch (Exception ex)
+            {
+                LogError("NotifyBroadcast(event=" + eventKey + ")", ex);
+                return 0;
             }
         }
 
@@ -440,6 +678,17 @@ namespace LeftoverFoodSystem
         }
 
         /// <summary>
+        /// Same template, but with the caller's real subject and body — used by
+        /// Phase 6a's "Preview Broadcast", where the point is to see the actual
+        /// text before it goes to everyone rather than a sample.
+        /// </summary>
+        public static string PreviewHtml(string fullName, string subject,
+                                         string message, string linkUrl = null)
+        {
+            return BuildHtmlBody(fullName, subject, message, linkUrl);
+        }
+
+        /// <summary>
         /// HTML email shell, styled to match the preview card on
         /// Donor/notifications.aspx. Inline CSS only — email clients strip
         /// stylesheets.
@@ -522,6 +771,16 @@ namespace LeftoverFoodSystem
         /// Append-only error log. Best effort — a logging failure must not
         /// escape either, or it would defeat the whole fail-soft design.
         /// </summary>
+        /// <summary>
+        /// Lets other fail-soft services (Phase 6b's FraudDetectionService)
+        /// write to the same log file. One place to look when something quietly
+        /// did not happen is worth more than a log per service.
+        /// </summary>
+        public static void LogExternalError(string context, Exception ex)
+        {
+            LogError(context, ex);
+        }
+
         private static void LogError(string context, Exception ex)
         {
             try

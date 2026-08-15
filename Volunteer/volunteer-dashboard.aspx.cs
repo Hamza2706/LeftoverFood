@@ -1,6 +1,9 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using LeftoverFoodSystem;
@@ -18,7 +21,161 @@ namespace LeftoverFood.Volunteer
                 BindStats();
                 BindActiveTasks();
                 BindCompleted();
+                BindLocationSharing();
             }
+        }
+
+        // ------------------------------------------------------------------
+        // Map helpers (Phase 5) — called from rptActiveTasks' <%# %> bindings
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Per-render memo of resolved NGO drop-off points.
+        ///
+        /// The markup asks for the destination latitude and longitude
+        /// separately, and several assignments often share one NGO, so without
+        /// this the same address would be resolved several times per page.
+        /// GeocodeCache already avoids re-hitting Nominatim, but this avoids
+        /// the repeated database round trips too.
+        /// </summary>
+        private readonly Dictionary<string, GeoPoint> _destCache =
+            new Dictionary<string, GeoPoint>(StringComparer.OrdinalIgnoreCase);
+
+        protected string MapTileUrl
+        {
+            get { return Setting("Map.TileUrl", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"); }
+        }
+
+        protected string MapAttribution
+        {
+            get { return Setting("Map.Attribution", "© OpenStreetMap contributors"); }
+        }
+
+        protected bool HasCoords(object latitude)
+        {
+            return latitude != null && latitude != DBNull.Value;
+        }
+
+        /// <summary>
+        /// Coordinate for a data- attribute, invariant so a comma-decimal
+        /// server locale can't emit "24,86" and break parseFloat in the JS.
+        /// </summary>
+        protected string Coord(object value)
+        {
+            if (value == null || value == DBNull.Value) return "";
+            return Convert.ToDecimal(value).ToString(CultureInfo.InvariantCulture);
+        }
+
+        private GeoPoint Dest(object address, object city)
+        {
+            string addr = Convert.ToString(address);
+            if (string.IsNullOrWhiteSpace(addr)) return null;
+
+            string key = addr + "|" + Convert.ToString(city);
+            if (!_destCache.ContainsKey(key))
+                _destCache[key] = GeocodingService.GeocodeDonation(addr, Convert.ToString(city));
+
+            return _destCache[key];
+        }
+
+        protected string DestLat(object address, object city)
+        {
+            GeoPoint p = Dest(address, city);
+            return p == null ? "" : p.LatText;
+        }
+
+        protected string DestLng(object address, object city)
+        {
+            GeoPoint p = Dest(address, city);
+            return p == null ? "" : p.LngText;
+        }
+
+        /// <summary>
+        /// Turn-by-turn directions on openstreetmap.org — no API key, matching
+        /// the rest of Phase 5. Returns "" when the pickup point is unknown, in
+        /// which case the markup hides the link rather than opening a map
+        /// pointing at nothing.
+        /// </summary>
+        protected string DirectionsUrl(object pickupLat, object pickupLng,
+                                       object ngoAddress, object ngoCity)
+        {
+            if (!HasCoords(pickupLat) || !HasCoords(pickupLng)) return "";
+
+            string from = Coord(pickupLat) + "," + Coord(pickupLng);
+            GeoPoint dest = Dest(ngoAddress, ngoCity);
+
+            // Without a destination this still usefully centres on the pickup.
+            string to = dest == null ? "" : dest.LatText + "," + dest.LngText;
+
+            return "https://www.openstreetmap.org/directions?engine=fossgis_osrm_car"
+                 + "&route=" + from + ";" + to;
+        }
+
+        private static string Setting(string key, string fallback)
+        {
+            string v = ConfigurationManager.AppSettings[key];
+            return string.IsNullOrWhiteSpace(v) ? fallback : v.Trim();
+        }
+
+        // ------------------------------------------------------------------
+        // Location sharing (Phase 5)
+        // ------------------------------------------------------------------
+
+        /// <summary>"true"/"false" for the reporting script's guard clauses.</summary>
+        protected string ShareLocationJs { get; private set; } = "false";
+        protected string HasActiveTaskJs { get; private set; } = "false";
+
+        private void BindLocationSharing()
+        {
+            int volunteerId = SessionHelper.GetUserID();
+
+            object share = DBHelper.ExecuteScalar(
+                "SELECT ShareLocation FROM Users WHERE UserID = @UserID",
+                new SqlParameter[] { new SqlParameter("@UserID", volunteerId) });
+
+            chkShareLocation.Checked = share != null && share != DBNull.Value && Convert.ToBoolean(share);
+
+            // The browser only starts reporting when there is something to
+            // report about; the endpoint enforces the same rule server-side.
+            object active = DBHelper.ExecuteScalar(
+                @"SELECT COUNT(*) FROM DeliveryAssignments
+                  WHERE VolunteerID = @VolunteerID AND Status IN ('Assigned', 'PickedUp')",
+                new SqlParameter[] { new SqlParameter("@VolunteerID", volunteerId) });
+
+            ShareLocationJs = chkShareLocation.Checked ? "true" : "false";
+            HasActiveTaskJs = (active != null && Convert.ToInt32(active) > 0) ? "true" : "false";
+        }
+
+        protected void chkShareLocation_CheckedChanged(object sender, EventArgs e)
+        {
+            int volunteerId = SessionHelper.GetUserID();
+
+            DBHelper.ExecuteNonQuery(
+                "UPDATE Users SET ShareLocation = @Share WHERE UserID = @UserID",
+                new SqlParameter[]
+                {
+                    new SqlParameter("@Share", chkShareLocation.Checked),
+                    new SqlParameter("@UserID", volunteerId)
+                });
+
+            if (!chkShareLocation.Checked)
+            {
+                // Switching off deletes the positions already collected, rather
+                // than just hiding them. Consent withdrawn means the data goes —
+                // keeping a trail the volunteer thinks they turned off would be
+                // the opposite of what the toggle promises.
+                DBHelper.ExecuteNonQuery(
+                    "DELETE FROM VolunteerLocations WHERE VolunteerID = @UserID",
+                    new SqlParameter[] { new SqlParameter("@UserID", volunteerId) });
+
+                ShowMessage("Location sharing turned off. Your stored positions have been deleted.", "alert-success");
+            }
+            else
+            {
+                ShowMessage("Location sharing is on. Your browser will ask for permission.", "alert-success");
+            }
+
+            BindLocationSharing();
         }
 
         private void BindStats()
@@ -42,7 +199,9 @@ namespace LeftoverFood.Volunteer
             DataTable dt = DBHelper.ExecuteQuery(
                 @"SELECT a.AssignmentID, a.Status, d.DonationID, d.FoodDescription, d.Quantity, d.PickupAddress,
                          d.City AS PickupCity, d.ContactPerson, d.ContactPhone,
-                         ngo.FullName AS NGOName, ngo.OrganizationName AS NGOOrgName
+                         d.Latitude, d.Longitude, d.GeoPrecision,
+                         ngo.FullName AS NGOName, ngo.OrganizationName AS NGOOrgName,
+                         ngo.Address AS NGOAddress, ngo.City AS NGOCity
                   FROM DeliveryAssignments a
                   JOIN FoodDonations d ON d.DonationID = a.DonationID
                   JOIN FoodRequests r ON r.DonationID = d.DonationID AND r.Status = 'Accepted'

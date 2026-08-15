@@ -9,9 +9,76 @@
 
 namespace LeftoverFood.Admin
 {
-
-
     public partial class fraud_detection
     {
+        /// <summary>
+        /// pnlMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlMessage;
+
+        /// <summary>
+        /// litMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litMessage;
+
+        /// <summary>
+        /// litScanHeadline control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litScanHeadline;
+
+        /// <summary>
+        /// btnRunScan control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnRunScan;
+
+        /// <summary>
+        /// litOpenCount control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litOpenCount;
+
+        /// <summary>
+        /// litFlaggedUsers control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litFlaggedUsers;
+
+        /// <summary>
+        /// litCleanCount control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litCleanCount;
+
+        /// <summary>
+        /// litSuspendedCount control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litSuspendedCount;
+
+        /// <summary>
+        /// ddlFlagFilter control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlFlagFilter;
+
+        /// <summary>
+        /// rptFlags control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptFlags;
+
+        /// <summary>
+        /// pnlNoFlags control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoFlags;
+
+        /// <summary>
+        /// litNoFlags control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litNoFlags;
+
+        /// <summary>
+        /// rptDonationLog control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptDonationLog;
+
+        /// <summary>
+        /// pnlNoLog control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoLog;
     }
 }

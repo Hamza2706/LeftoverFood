@@ -15,6 +15,16 @@ namespace LeftoverFood.Admin
     {
 
         /// <summary>
+        /// litAsAt control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litAsAt;
+
+        /// <summary>
+        /// btnRefresh control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnRefresh;
+
+        /// <summary>
         /// lblActionMessage control.
         /// </summary>
         /// <remarks>
@@ -85,6 +95,76 @@ namespace LeftoverFood.Admin
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlNoPending;
+
+        /// <summary>
+        /// rptRecentDonations control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptRecentDonations;
+
+        /// <summary>
+        /// pnlNoDonations control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoDonations;
+
+        /// <summary>
+        /// litFulfilment control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litFulfilment;
+
+        /// <summary>
+        /// barFulfilment control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl barFulfilment;
+
+        /// <summary>
+        /// litFulfilmentNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litFulfilmentNote;
+
+        /// <summary>
+        /// litNgoResponse control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litNgoResponse;
+
+        /// <summary>
+        /// barNgoResponse control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl barNgoResponse;
+
+        /// <summary>
+        /// litNgoResponseNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litNgoResponseNote;
+
+        /// <summary>
+        /// litVolunteerFree control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litVolunteerFree;
+
+        /// <summary>
+        /// barVolunteerFree control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl barVolunteerFree;
+
+        /// <summary>
+        /// litVolunteerFreeNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litVolunteerFreeNote;
+
+        /// <summary>
+        /// litUserGrowth control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litUserGrowth;
+
+        /// <summary>
+        /// barUserGrowth control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl barUserGrowth;
+
+        /// <summary>
+        /// litUserGrowthNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litUserGrowthNote;
 
         /// <summary>
         /// rptUsers control.

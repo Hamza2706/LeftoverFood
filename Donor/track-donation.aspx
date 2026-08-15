@@ -27,6 +27,8 @@
     .info-row { display:flex; justify-content:space-between; padding:.65rem 0; border-bottom:1px solid var(--sand); font-size:.9rem; }
     .info-row:last-child { border-bottom:none; }
   </style>
+  <!-- Phase 5: Leaflet (OpenStreetMap). No API key required. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body style="background:var(--cream)">
 <form id="form1" runat="server">
@@ -97,22 +99,48 @@
           </asp:Panel>
         </div>
 
-        <!-- Google Maps Placeholder -->
+        <!-- Delivery map (Phase 5) — Leaflet + OpenStreetMap, no API key.
+             Replaces a placeholder that promised "real-time volunteer
+             location" before anything tracked volunteers. -->
         <div class="fb-card p-0 overflow-hidden">
-          <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);display:flex;justify-content:space-between;align-items:center">
-            <h6 style="font-family:'DM Serif Display',serif;margin:0"><i class="bi bi-geo-alt-fill me-2 text-success"></i>Live Delivery Map</h6>
-            <span style="font-size:.78rem;color:var(--text-muted)">Google Maps API integration</span>
+          <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+            <h6 style="font-family:'DM Serif Display',serif;margin:0"><i class="bi bi-geo-alt-fill me-2 text-success"></i>Delivery Map</h6>
+            <span style="font-size:.78rem;color:var(--text-muted)"><asp:Literal runat="server" ID="litMapNote" /></span>
           </div>
-          <div class="map-placeholder" style="border-radius:0;border:none">
-            <i class="bi bi-map-fill" style="font-size:3rem;color:var(--green-mid);opacity:.5;margin-bottom:1rem"></i>
-            <div style="font-weight:600;color:var(--green)">Interactive Map — Google Maps API</div>
-            <div style="font-size:.85rem;color:var(--text-muted);margin-top:.4rem;text-align:center;max-width:350px">Shows real-time volunteer location, donor pickup point, and NGO drop-off destination. Requires Google Maps API key in production.</div>
-            <div class="d-flex gap-3 mt-4" style="font-size:.82rem">
-              <div style="display:flex;align-items:center;gap:.4rem"><span style="width:12px;height:12px;border-radius:50%;background:var(--green);display:inline-block"></span>Donor Location</div>
-              <div style="display:flex;align-items:center;gap:.4rem"><span style="width:12px;height:12px;border-radius:50%;background:var(--amber);display:inline-block"></span>Volunteer (Live)</div>
-              <div style="display:flex;align-items:center;gap:.4rem"><span style="width:12px;height:12px;border-radius:50%;background:var(--red);display:inline-block"></span>NGO Drop-off</div>
+
+          <%-- Rendered only when we actually have coordinates. --%>
+          <asp:Panel runat="server" ID="pnlMap" Visible="false">
+            <div class="fb-map"
+                 style="height:320px"
+                 data-lat='<%= MapLat %>'
+                 data-lng='<%= MapLng %>'
+                 data-precision='<%= MapPrecision %>'
+                 data-label='<%= MapPickupLabel %>'
+                 data-dest-lat='<%= MapDestLat %>'
+                 data-dest-lng='<%= MapDestLng %>'
+                 data-dest-label='<%= MapDestLabel %>'
+                 data-track-url='<%= MapTrackUrl %>'
+                 data-poll-seconds='<%= MapPollSeconds %>'
+                 data-tile-url='<%= MapTileUrl %>'
+                 data-attribution='<%= MapAttribution %>'></div>
+
+            <div class="d-flex gap-3 p-3 flex-wrap" style="font-size:.82rem;border-top:1.5px solid var(--sand)">
+              <div style="display:flex;align-items:center;gap:.4rem"><span style="width:12px;height:12px;border-radius:50%;background:#2f7a4d;display:inline-block"></span>Pickup point</div>
+              <div style="display:flex;align-items:center;gap:.4rem"><span style="width:12px;height:12px;border-radius:50%;background:#b45309;display:inline-block"></span>NGO drop-off</div>
+              <div style="display:flex;align-items:center;gap:.4rem"><span style="width:12px;height:12px;border-radius:50%;background:#1d4ed8;display:inline-block"></span>Volunteer (live)</div>
             </div>
-          </div>
+          </asp:Panel>
+
+          <%-- Fallback: no coordinates resolved, so show the address as text
+               rather than dropping a pin we can't justify. --%>
+          <asp:Panel runat="server" ID="pnlNoMap" Visible="false" CssClass="map-placeholder" Style="border-radius:0;border:none">
+            <i class="bi bi-geo-alt" style="font-size:2.5rem;color:var(--green-mid);opacity:.5;margin-bottom:.8rem"></i>
+            <div style="font-weight:600;color:var(--green)">Map unavailable for this address</div>
+            <div style="font-size:.85rem;color:var(--text-muted);margin-top:.4rem;text-align:center;max-width:360px">
+              The pickup address couldn't be matched to a location on the map. Pickup address:<br />
+              <strong><asp:Literal runat="server" ID="litFallbackAddress" /></strong>
+            </div>
+          </asp:Panel>
         </div>
 
       </div>
@@ -155,19 +183,21 @@
           <div style="font-size:.83rem;color:var(--text-muted)">Not yet implemented — donors, NGOs, and volunteers currently rely on their in-app dashboards for status updates.</div>
         </div>
 
-        <!-- Rating (post-delivery) -->
-        <div class="fb-card" style="opacity:.6">
-          <h6 style="font-family:'DM Serif Display',serif;margin-bottom:.5rem">Rate This Donation</h6>
-          <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:1rem">Ratings aren't implemented yet</div>
-          <div class="d-flex gap-1 mb-2">
-            <i class="bi bi-star" style="font-size:1.5rem;color:var(--sand-dark)"></i>
-            <i class="bi bi-star" style="font-size:1.5rem;color:var(--sand-dark)"></i>
-            <i class="bi bi-star" style="font-size:1.5rem;color:var(--sand-dark)"></i>
-            <i class="bi bi-star" style="font-size:1.5rem;color:var(--sand-dark)"></i>
-            <i class="bi bi-star" style="font-size:1.5rem;color:var(--sand-dark)"></i>
-          </div>
-          <textarea class="fb-input fb-textarea" style="min-height:70px;font-size:.85rem" placeholder="Leave feedback about this donation..." disabled></textarea>
-          <button class="btn-green mt-2" disabled>Submit Rating</button>
+        <%-- Rating (post-delivery). Phase 6c replaced the disabled mockup form
+             here with a link through to the real one. Rating lives on
+             ~/Ratings.aspx because a delivery has up to three participants and
+             the rater picks which of them they are rating — a single-target
+             form on this page could only ever cover one of them, and a second
+             implementation of the same insert is exactly the duplication
+             Phases 0 and 4 spent effort removing. --%>
+        <div class="fb-card" style='<%= IsDelivered ? "" : "opacity:.6" %>'>
+          <h6 style="font-family:'DM Serif Display',serif;margin-bottom:.5rem">Rate This Delivery</h6>
+          <% if (IsDelivered) { %>
+            <div style="font-size:.83rem;color:var(--text-muted);margin-bottom:1rem">This delivery is complete — you can rate the NGO that received it and the volunteer who carried it.</div>
+            <a class="btn-green" href="<%= ResolveUrl("~/Ratings.aspx") %>"><i class="bi bi-star-fill me-1"></i>Rate this delivery</a>
+          <% } else { %>
+            <div style="font-size:.83rem;color:var(--text-muted)">Rating opens once this donation has been delivered.</div>
+          <% } %>
         </div>
 
       </div>
@@ -180,5 +210,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../assets/js/main.js"></script>
 </form>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="<%= ResolveUrl("~/assets/js/fb-map.js") %>"></script>
 </body>
 </html>

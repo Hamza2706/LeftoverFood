@@ -23,7 +23,15 @@
       <button id="sidebarToggle" type="button" class="d-lg-none btn btn-sm btn-light border me-2"><i class="bi bi-list"></i></button>
       <span style="font-family:'DM Serif Display',serif;font-size:1.2rem;flex:1"><asp:ContentPlaceHolder ID="PageHeading" runat="server" /></span>
       <div class="fb-topbar-actions">
-        <div class="search-wrap"><i class="bi bi-search"></i><input class="fb-search" placeholder="Search..."/></div>
+        <%-- Was a plain <input> with no name, no handler and no destination —
+             decorative on every page in the app. DefaultButton makes Enter
+             submit this box specifically, rather than whichever button the
+             hosting page happens to declare first. --%>
+        <asp:Panel runat="server" ID="pnlSearch" CssClass="search-wrap" DefaultButton="btnSearch">
+          <asp:LinkButton runat="server" ID="btnSearch" OnClick="btnSearch_Click"
+                          ToolTip="Search" Style="z-index:2"><i class="bi bi-search"></i></asp:LinkButton>
+          <asp:TextBox runat="server" ID="txtSearch" CssClass="fb-search" placeholder="Search donations…" />
+        </asp:Panel>
         <%-- Phase 4: was a static bell with a permanently-lit dot. Now a real
              link to the shared notifications page, with a live unread count. --%>
         <a class="notif-btn" runat="server" id="notifBell" href="~/Notifications.aspx"

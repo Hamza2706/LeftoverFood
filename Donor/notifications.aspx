@@ -69,7 +69,7 @@
               <asp:TextBox runat="server" ID="txtEmail" CssClass="fb-input" ReadOnly="true" />
               <div class="form-hint">
                 <i class="bi bi-info-circle me-1"></i>This is the address on your account. Change it from
-                <a href="<%= ResolveUrl("~/Donor/profile.aspx") %>">My Profile</a>.
+                <a href="<%= ResolveUrl("~/Profile.aspx") %>">My Profile</a>.
               </div>
             </div>
 
@@ -107,7 +107,7 @@
             </div>
             <div class="toggle-row">
               <div class="info">
-                <div class="t-title">Rating Received <span class="tag-inactive">Not active yet</span></div>
+                <div class="t-title">Rating Received</div>
                 <div class="t-desc">Email when an NGO or volunteer rates your donation — arrives with the ratings feature (Phase 6c)</div>
               </div>
               <asp:CheckBox runat="server" ID="chkEmailRatingReceived" CssClass="toggle-switch" />
@@ -121,7 +121,7 @@
             </div>
             <div class="toggle-row">
               <div class="info">
-                <div class="t-title">Emergency Mode Alerts <span class="tag-inactive">Not active yet</span></div>
+                <div class="t-title">Emergency Mode Alerts</div>
                 <div class="t-desc">Urgent alerts during an emergency broadcast — arrives with Emergency Mode (Phase 6a)</div>
               </div>
               <asp:CheckBox runat="server" ID="chkEmailEmergencyAlert" CssClass="toggle-switch" />

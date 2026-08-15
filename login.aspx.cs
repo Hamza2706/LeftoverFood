@@ -93,7 +93,22 @@ namespace LeftoverFood
                 Session["Role"] = user["Role"].ToString();
                 Session["Email"] = email;
 
-                // 5. Redirect based on role
+                // 5. Stamp the sign-in time for ~/Profile.aspx's Account Info card
+                //    (Phase 7). Deliberately in its own try/catch: this is a
+                //    bookkeeping write, and failing to record it must never stop
+                //    someone signing in.
+                try
+                {
+                    DBHelper.ExecuteNonQuery(
+                        "UPDATE Users SET LastLoginAt = GETDATE() WHERE UserID = @UserID",
+                        new SqlParameter[] { new SqlParameter("@UserID", user["UserID"]) });
+                }
+                catch (Exception ex)
+                {
+                    NotificationService.LogExternalError("login.LastLoginAt", ex);
+                }
+
+                // 6. Redirect based on role
                 RedirectToDashboard(user["Role"].ToString());
             }
             catch (Exception)

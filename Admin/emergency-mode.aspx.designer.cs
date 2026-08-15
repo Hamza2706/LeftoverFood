@@ -9,9 +9,156 @@
 
 namespace LeftoverFood.Admin
 {
-
-
     public partial class emergency_mode
     {
+        /// <summary>
+        /// pnlMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlMessage;
+
+        /// <summary>
+        /// litMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litMessage;
+
+        /// <summary>
+        /// pnlActive control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlActive;
+
+        /// <summary>
+        /// litActiveSummary control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litActiveSummary;
+
+        /// <summary>
+        /// btnDeactivate control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnDeactivate;
+
+        /// <summary>
+        /// pnlInactive control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlInactive;
+
+        /// <summary>
+        /// ddlEmergencyType control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlEmergencyType;
+
+        /// <summary>
+        /// ddlCity control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlCity;
+
+        /// <summary>
+        /// txtStartAt control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtStartAt;
+
+        /// <summary>
+        /// ddlDuration control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlDuration;
+
+        /// <summary>
+        /// txtPriorityAreas control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtPriorityAreas;
+
+        /// <summary>
+        /// ddlAudience control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlAudience;
+
+        /// <summary>
+        /// pnlUnknownCity control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlUnknownCity;
+
+        /// <summary>
+        /// chkIncludeUnknownCity control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.CheckBox chkIncludeUnknownCity;
+
+        /// <summary>
+        /// litUnknownCityNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litUnknownCityNote;
+
+        /// <summary>
+        /// txtMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtMessage;
+
+        /// <summary>
+        /// litRecipientCount control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litRecipientCount;
+
+        /// <summary>
+        /// litSmtpWarning control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litSmtpWarning;
+
+        /// <summary>
+        /// btnActivate control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnActivate;
+
+        /// <summary>
+        /// btnPreview control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnPreview;
+
+        /// <summary>
+        /// pnlPreview control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlPreview;
+
+        /// <summary>
+        /// litPreview control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litPreview;
+
+        /// <summary>
+        /// rptPriority control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptPriority;
+
+        /// <summary>
+        /// pnlNoPriority control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoPriority;
+
+        /// <summary>
+        /// btnRamadanPreset control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnRamadanPreset;
+
+        /// <summary>
+        /// rptHistory control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptHistory;
+
+        /// <summary>
+        /// pnlNoHistory control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoHistory;
+
+        /// <summary>
+        /// ddlQuickAudience control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlQuickAudience;
+
+        /// <summary>
+        /// txtQuickMessage control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtQuickMessage;
+
+        /// <summary>
+        /// btnQuickSend control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnQuickSend;
     }
 }

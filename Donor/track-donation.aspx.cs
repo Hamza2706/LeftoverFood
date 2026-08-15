@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Web.UI;
 using LeftoverFoodSystem;
 
@@ -12,6 +14,13 @@ namespace LeftoverFood.Donor
         private string _status = "";
 
         protected string VolunteerName { get; private set; } = "";
+
+        /// <summary>
+        /// Phase 6c. Gates the rating card — you can only rate a delivery that
+        /// actually completed. ~/Ratings.aspx re-checks this itself; this is
+        /// only about not showing a dead link.
+        /// </summary>
+        protected bool IsDelivered { get { return _status == "Delivered"; } }
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -35,7 +44,9 @@ namespace LeftoverFood.Donor
             DataTable dt = DBHelper.ExecuteQuery(
                 @"SELECT d.DonationID, d.FoodDescription, d.Quantity, d.Servings, d.Category, d.DietaryInfo,
                          d.PickupAddress, d.City, d.Status, d.CreatedAt, d.ApprovedAt, d.ExpiryTime, d.DonorID,
+                         d.Latitude, d.Longitude, d.GeoPrecision,
                          r.RequestedAt, ngo.FullName AS NGOName, ngo.OrganizationName AS NGOOrgName,
+                         ngo.Address AS NGOAddress, ngo.City AS NGOCity,
                          vol.FullName AS VolunteerName, a.AssignedAt, a.PickedUpAt, a.DeliveredAt
                   FROM FoodDonations d
                   LEFT JOIN FoodRequests r ON r.DonationID = d.DonationID AND r.Status = 'Accepted'
@@ -71,6 +82,89 @@ namespace LeftoverFood.Donor
 
             BuildTimeline(row);
             BuildExpiryTracker(row);
+            BuildMap(row);
+        }
+
+        // ------------------------------------------------------------------
+        // Map (Phase 5)
+        // ------------------------------------------------------------------
+
+        protected string MapLat { get; private set; } = "";
+        protected string MapLng { get; private set; } = "";
+        protected string MapPrecision { get; private set; } = "";
+        protected string MapPickupLabel { get; private set; } = "";
+        protected string MapDestLat { get; private set; } = "";
+        protected string MapDestLng { get; private set; } = "";
+        protected string MapDestLabel { get; private set; } = "";
+        protected string MapTrackUrl { get; private set; } = "";
+        protected string MapPollSeconds { get; private set; } = "20";
+        protected string MapTileUrl { get; private set; } = "";
+        protected string MapAttribution { get; private set; } = "";
+
+        /// <summary>
+        /// Populate the map's data- attributes, or fall back to showing the
+        /// address as text when the pickup address never resolved to
+        /// coordinates — which is common with real addresses here.
+        /// </summary>
+        private void BuildMap(DataRow row)
+        {
+            MapTileUrl = Setting("Map.TileUrl", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+            MapAttribution = Setting("Map.Attribution", "© OpenStreetMap contributors");
+            MapPollSeconds = Setting("Map.PollSeconds", "20");
+
+            if (row["Latitude"] == DBNull.Value || row["Longitude"] == DBNull.Value)
+            {
+                pnlNoMap.Visible = true;
+                litFallbackAddress.Text = Server.HtmlEncode(
+                    row["PickupAddress"] + ", " + row["City"]);
+                litMapNote.Text = "No map available";
+                return;
+            }
+
+            MapLat = Convert.ToDecimal(row["Latitude"]).ToString(CultureInfo.InvariantCulture);
+            MapLng = Convert.ToDecimal(row["Longitude"]).ToString(CultureInfo.InvariantCulture);
+            MapPrecision = Convert.ToString(row["GeoPrecision"]);
+            MapPickupLabel = Server.HtmlEncode(Convert.ToString(row["PickupAddress"]));
+
+            // Be explicit in the header about how much the pin can be trusted.
+            // A city-level point is the city centre, not the pickup address.
+            litMapNote.Text = MapPrecision == GeoPrecision.City
+                ? "Approximate location — city level only"
+                : "OpenStreetMap";
+
+            // NGO drop-off. Geocoded through the cache, so an NGO's address is
+            // only ever sent to Nominatim once.
+            string ngoAddress = Convert.ToString(row["NGOAddress"]);
+            if (!string.IsNullOrWhiteSpace(ngoAddress))
+            {
+                GeoPoint dest = GeocodingService.GeocodeDonation(
+                    ngoAddress, Convert.ToString(row["NGOCity"]));
+
+                if (dest != null)
+                {
+                    MapDestLat = dest.LatText;
+                    MapDestLng = dest.LngText;
+                    MapDestLabel = Server.HtmlEncode(
+                        NgoLabel(row["NGOOrgName"], row["NGOName"]) + " — drop-off");
+                }
+            }
+
+            // Only poll for a live volunteer position while a delivery is
+            // actually in progress. The handler enforces this too, but there is
+            // no point issuing requests that can only ever answer "no".
+            if (_status == "Assigned" || _status == "PickedUp")
+            {
+                MapTrackUrl = ResolveUrl("~/LocationHandler.ashx?donationId="
+                                         + Convert.ToInt32(row["DonationID"]));
+            }
+
+            pnlMap.Visible = true;
+        }
+
+        private static string Setting(string key, string fallback)
+        {
+            string v = ConfigurationManager.AppSettings[key];
+            return string.IsNullOrWhiteSpace(v) ? fallback : v.Trim();
         }
 
         private void ShowNotFound()

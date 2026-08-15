@@ -1,6 +1,8 @@
-using System;
+﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using LeftoverFoodSystem;
@@ -19,6 +21,43 @@ namespace LeftoverFood.NGO
                 BindRequests();
                 BindCompleted();
             }
+        }
+
+        // ------------------------------------------------------------------
+        // Map helpers (Phase 5) — referenced from the repeater's <%# %> bindings
+        // ------------------------------------------------------------------
+
+        protected string MapTileUrl
+        {
+            get { return Setting("Map.TileUrl", "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"); }
+        }
+
+        protected string MapAttribution
+        {
+            get { return Setting("Map.Attribution", "© OpenStreetMap contributors"); }
+        }
+
+        /// <summary>True when a donation resolved to coordinates.</summary>
+        protected bool HasCoords(object latitude)
+        {
+            return latitude != null && latitude != DBNull.Value;
+        }
+
+        /// <summary>
+        /// Coordinate formatted for a data- attribute. Invariant culture, so a
+        /// comma-decimal server locale can't emit "24,86" and break the JS
+        /// parseFloat.
+        /// </summary>
+        protected string Coord(object value)
+        {
+            if (value == null || value == DBNull.Value) return "";
+            return Convert.ToDecimal(value).ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string Setting(string key, string fallback)
+        {
+            string v = ConfigurationManager.AppSettings[key];
+            return string.IsNullOrWhiteSpace(v) ? fallback : v.Trim();
         }
 
         private void BindStats()
@@ -52,6 +91,7 @@ namespace LeftoverFood.NGO
         {
             DataTable dt = DBHelper.ExecuteQuery(
                 @"SELECT d.DonationID, d.FoodDescription, d.Quantity, d.PickupAddress, d.City, d.Status AS DonationStatus,
+                         d.Latitude, d.Longitude, d.GeoPrecision,
                          r.RequestID, r.RequestedAt, r.ActualQuantityReceived,
                          donor.FullName AS DonorName,
                          vol.FullName AS VolunteerName,
@@ -137,6 +177,13 @@ namespace LeftoverFood.NGO
 
                     if (d.Rows.Count > 0)
                     {
+                        // Phase 6b: this is the only point where a claimed
+                        // quantity can be compared against one an independent
+                        // party actually measured, so the mismatch rule runs
+                        // here rather than at posting time.
+                        FraudDetectionService.CheckReceipt(
+                            Convert.ToInt32(d.Rows[0]["DonationID"]));
+
                         // Closing the loop: the donor finds out their food
                         // actually reached people, which is the whole point.
                         NotificationService.Notify(

@@ -63,6 +63,20 @@ namespace LeftoverFood.Controls
             return string.Equals(current, pageFileName, StringComparison.OrdinalIgnoreCase) ? "active" : "";
         }
 
+        /// <summary>
+        /// Highlights Donors / NGOs / Volunteers, which are one page
+        /// (~/Admin/users.aspx) distinguished by ?role=. IsActive alone would
+        /// light all three at once, since they share a file name.
+        /// </summary>
+        protected string IsRoleActive(string role)
+        {
+            if (IsActive("users.aspx") != "active") return "";
+
+            return string.Equals(Request.QueryString["role"], role, StringComparison.OrdinalIgnoreCase)
+                ? "active"
+                : "";
+        }
+
         // --- Per-role chrome ------------------------------------------------
         // Kept in step with Site.master.cs's topbar avatar colours.
 

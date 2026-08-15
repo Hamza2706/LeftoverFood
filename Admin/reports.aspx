@@ -1,12 +1,40 @@
 <%@ Page Title="Reports & Analytics – FoodBridge Admin" Language="C#" MasterPageFile="~/Admin/AdminMaster.master" AutoEventWireup="true" CodeBehind="reports.aspx.cs" Inherits="LeftoverFood.Admin.reports" %>
 
+<%--
+  Phase 6d. Every number on this page is now a query.
+
+  The mockup was headed "April 2025" and hardcoded all of it: 248 donations,
+  5,830 meals, a 94% fulfilment rate, four months of bar chart, five named top
+  donors, five named NGOs, and five cities. It also carried change arrows
+  ("↑8%") against no comparison period at all.
+
+  EXPORTS — deliberate deviation from the roadmap, agreed before building.
+  §6d planned ClosedXML for .xlsx and iTextSharp/itext7 for PDF. Neither is
+  used:
+
+    - Excel  -> CSV with a UTF-8 BOM. Excel opens it natively on double-click,
+                and the BOM is what makes it read Urdu and other non-ASCII food
+                descriptions correctly instead of mojibake — the same class of
+                bug Phase 4 found when Notifications.Message was varchar rather
+                than nvarchar. ClosedXML would have meant hand-resolving a
+                dependency tree into a packages.config project with no
+                nuget.exe available.
+    - PDF    -> a print stylesheet plus the browser's own Save as PDF. The
+                buttons say "Print / Save as PDF" rather than "PDF Format",
+                because a download that is really a print dialog should say so.
+
+  This keeps the project at exactly one NuGet package, which is where it
+  started. If your supervisor requires a server-generated PDF file, that is the
+  one thing here that would need a real library.
+--%>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="AdminHeadContent" runat="server">
   <style>
     .chart-bar-wrap { display:flex; flex-direction:column; gap:.5rem; }
     .chart-bar-row { display:flex; align-items:center; gap:.75rem; font-size:.83rem; }
     .chart-bar-label { width:90px; text-align:right; color:var(--text-muted); flex-shrink:0; }
     .chart-bar-bg { flex:1; height:24px; background:var(--sand); border-radius:50px; overflow:hidden; }
-    .chart-bar-fill { height:100%; border-radius:50px; display:flex; align-items:center; padding-left:.6rem; color:#fff; font-size:.75rem; font-weight:600; transition:width .6s ease; }
+    .chart-bar-fill { height:100%; border-radius:50px; display:flex; align-items:center; padding-left:.6rem; color:#fff; font-size:.75rem; font-weight:600; }
     .chart-bar-val { width:42px; text-align:right; font-weight:700; color:var(--text-dark); font-size:.83rem; flex-shrink:0; }
 
     .donut-wrap { position:relative; width:140px; height:140px; flex-shrink:0; }
@@ -18,241 +46,324 @@
     .kpi-card .kpi-lbl { font-size:.76rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-top:.25rem; }
     .kpi-card .kpi-change { font-size:.8rem; font-weight:600; margin-top:.5rem; }
     .up { color:#16a34a; } .down { color:var(--red); }
+    .note-inline { font-size:.78rem; color:var(--text-muted); }
+
+    /* Phase 6d: this is the "PDF export". Hiding the app chrome and the
+       controls that cannot be pressed on paper turns the browser's own
+       Save-as-PDF into a presentable report. */
+    @media print {
+      .fb-sidebar, .fb-topbar, .no-print { display:none !important; }
+      .fb-main, .fb-content { margin:0 !important; padding:0 !important; }
+      .fb-card, .kpi-card { break-inside:avoid; border:1px solid #ddd !important; box-shadow:none !important; }
+      body { background:#fff !important; }
+      a[href]:after { content:""; }
+    }
   </style>
 </asp:Content>
 
-<asp:Content ID="Content2" ContentPlaceHolderID="AdminPageHeading" runat="server">Reports & Analytics</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="AdminPageHeading" runat="server">Reports &amp; Analytics</asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="AdminMainContent" runat="server">
 
-      <div class="page-header">
-        <h2>Food Waste Analytics — April 2025</h2>
-        <p class="text-muted">Comprehensive report of all donation activity, distribution efficiency, and system performance.</p>
+  <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+    <div>
+      <h2>Food Waste Analytics — <asp:Literal runat="server" ID="litPeriodLabel" /></h2>
+      <p class="text-muted mb-0">Donation activity, distribution efficiency and system performance, generated live from the database.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center no-print">
+      <asp:DropDownList runat="server" ID="ddlPeriod" CssClass="fb-input fb-select"
+                        style="width:auto;font-size:.85rem;padding:.4rem .9rem;border-radius:50px"
+                        AutoPostBack="true" OnSelectedIndexChanged="ddlPeriod_SelectedIndexChanged">
+        <asp:ListItem Text="This month" Value="month" />
+        <asp:ListItem Text="Last 30 days" Value="30" />
+        <asp:ListItem Text="This year" Value="year" />
+        <asp:ListItem Text="All time" Value="all" />
+      </asp:DropDownList>
+      <button type="button" class="btn-sm-outline" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i>Print / Save as PDF
+      </button>
+    </div>
+  </div>
+
+  <asp:Panel runat="server" ID="pnlEmpty" Visible="false" CssClass="alert alert-warning mb-4">
+    <asp:Literal runat="server" ID="litEmpty" />
+  </asp:Panel>
+
+  <!-- ===================== KPIs ===================== -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+          <div class="stat-icon" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-basket2-fill"></i></div>
+          <asp:Literal runat="server" ID="litDonationsChange" />
+        </div>
+        <div class="kpi-val" style="color:var(--green)"><asp:Literal runat="server" ID="litTotalDonations" /></div>
+        <div class="kpi-lbl">Total Donations</div>
       </div>
-
-      <!-- KPI CARDS -->
-      <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-          <div class="kpi-card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
-              <div class="stat-icon" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-basket2-fill"></i></div>
-              <span class="kpi-change up"><i class="bi bi-arrow-up"></i>8%</span>
-            </div>
-            <div class="kpi-val" style="color:var(--green)">248</div>
-            <div class="kpi-lbl">Total Donations</div>
-          </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+          <div class="stat-icon" style="background:var(--purple-light);color:var(--purple)"><i class="bi bi-people-fill"></i></div>
+          <asp:Literal runat="server" ID="litMealsChange" />
         </div>
-        <div class="col-6 col-md-3">
-          <div class="kpi-card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
-              <div class="stat-icon" style="background:var(--purple-light);color:var(--purple)"><i class="bi bi-people-fill"></i></div>
-              <span class="kpi-change up"><i class="bi bi-arrow-up"></i>22%</span>
-            </div>
-            <div class="kpi-val" style="color:var(--purple)">5,830</div>
-            <div class="kpi-lbl">Meals Distributed</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="kpi-card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
-              <div class="stat-icon" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-check2-circle"></i></div>
-              <span class="kpi-change up"><i class="bi bi-arrow-up"></i>3%</span>
-            </div>
-            <div class="kpi-val" style="color:var(--blue)">94%</div>
-            <div class="kpi-lbl">Fulfillment Rate</div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="kpi-card">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
-              <div class="stat-icon" style="background:var(--amber-light);color:var(--amber)"><i class="bi bi-trash3-fill"></i></div>
-              <span class="kpi-change down"><i class="bi bi-arrow-down"></i>12%</span>
-            </div>
-            <div class="kpi-val" style="color:var(--amber)">14</div>
-            <div class="kpi-lbl">Expired Donations</div>
-          </div>
-        </div>
+        <div class="kpi-val" style="color:var(--purple)"><asp:Literal runat="server" ID="litMealsDistributed" /></div>
+        <div class="kpi-lbl">Meals Distributed</div>
       </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+          <div class="stat-icon" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-check2-circle"></i></div>
+        </div>
+        <div class="kpi-val" style="color:var(--blue)"><asp:Literal runat="server" ID="litFulfilment" /></div>
+        <div class="kpi-lbl">Fulfilment Rate</div>
+        <div class="note-inline mt-1">Delivered ÷ donations that reached approval</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+          <div class="stat-icon" style="background:var(--amber-light);color:var(--amber)"><i class="bi bi-trash3-fill"></i></div>
+        </div>
+        <div class="kpi-val" style="color:var(--amber)"><asp:Literal runat="server" ID="litExpired" /></div>
+        <div class="kpi-lbl">Expired Donations</div>
+        <div class="note-inline mt-1">Past expiry, never delivered</div>
+      </div>
+    </div>
+  </div>
 
-      <div class="row g-4 mb-4">
+  <div class="row g-4 mb-4">
 
-        <!-- Monthly Donations Bar Chart -->
-        <div class="col-lg-7">
-          <div class="fb-card h-100">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h6 style="font-family:'DM Serif Display',serif;margin:0">Monthly Donations (2025)</h6>
-              <div class="d-flex gap-2">
-                <span style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><span style="width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block"></span>Delivered</span>
-                <span style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><span style="width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block"></span>Pending</span>
-                <span style="display:flex;align-items:center;gap:.3rem;font-size:.78rem"><span style="width:10px;height:10px;background:#f87171;border-radius:2px;display:inline-block"></span>Expired</span>
+    <!-- Monthly donations -->
+    <div class="col-lg-7">
+      <div class="fb-card h-100">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <h6 style="font-family:'DM Serif Display',serif;margin:0">Donations by Month — <asp:Literal runat="server" ID="litChartYear" /></h6>
+        </div>
+        <div class="chart-bar-wrap">
+          <asp:Repeater runat="server" ID="rptMonthly">
+            <ItemTemplate>
+              <div class="chart-bar-row">
+                <span class="chart-bar-label"><%# Eval("Label") %></span>
+                <div class="chart-bar-bg"><div class="chart-bar-fill" style='width:<%# Eval("Percent") %>%;background:var(--green)'></div></div>
+                <span class="chart-bar-val"><%# Eval("Count") %></span>
               </div>
-            </div>
-            <div class="chart-bar-wrap">
-              <div class="chart-bar-row"><span class="chart-bar-label">January</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:60%;background:var(--green)">142</div></div><span class="chart-bar-val">142</span></div>
-              <div class="chart-bar-row"><span class="chart-bar-label">February</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:68%;background:var(--green)">160</div></div><span class="chart-bar-val">160</span></div>
-              <div class="chart-bar-row"><span class="chart-bar-label">March</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:77%;background:var(--green)">184</div></div><span class="chart-bar-val">184</span></div>
-              <div class="chart-bar-row"><span class="chart-bar-label">April</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:100%;background:var(--green)">234</div></div><span class="chart-bar-val">248</span></div>
-            </div>
-            <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--sand)">
-              <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.8rem;font-weight:600">April Breakdown</div>
-              <div class="d-flex gap-3 flex-wrap">
-                <div style="background:#e8f5ee;border-radius:8px;padding:.5rem .9rem;font-size:.82rem"><strong style="color:var(--green)">234</strong> Delivered</div>
-                <div style="background:#fff3e0;border-radius:8px;padding:.5rem .9rem;font-size:.82rem"><strong style="color:var(--amber)">8</strong> Pending</div>
-                <div style="background:#fee2e2;border-radius:8px;padding:.5rem .9rem;font-size:.82rem"><strong style="color:var(--red)">14</strong> Expired</div>
-                <div style="background:var(--cream);border-radius:8px;padding:.5rem .9rem;font-size:.82rem"><strong>2</strong> Rejected</div>
-              </div>
-            </div>
-          </div>
+            </ItemTemplate>
+          </asp:Repeater>
         </div>
 
-        <!-- Donation by Category Donut -->
-        <div class="col-lg-5">
-          <div class="fb-card h-100">
-            <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.5rem">Donations by Category</h6>
-            <div class="d-flex align-items-center gap-4 flex-wrap">
-              <!-- CSS Donut Chart -->
-              <div class="donut-wrap">
-                <svg width="140" height="140" viewBox="0 0 140 140">
-                  <circle cx="70" cy="70" r="55" fill="none" stroke="var(--sand)" stroke-width="20"/>
-                  <!-- Cooked 42% -->
-                  <circle cx="70" cy="70" r="55" fill="none" stroke="var(--green)" stroke-width="20"
-                    stroke-dasharray="145 200" stroke-dashoffset="0"/>
-                  <!-- Bakery 22% -->
-                  <circle cx="70" cy="70" r="55" fill="none" stroke="var(--amber)" stroke-width="20"
-                    stroke-dasharray="76 345" stroke-dashoffset="-145"/>
-                  <!-- Raw 18% -->
-                  <circle cx="70" cy="70" r="55" fill="none" stroke="var(--blue)" stroke-width="20"
-                    stroke-dasharray="62 345" stroke-dashoffset="-221"/>
-                  <!-- Packaged 18% -->
-                  <circle cx="70" cy="70" r="55" fill="none" stroke="var(--purple)" stroke-width="20"
-                    stroke-dasharray="62 345" stroke-dashoffset="-283"/>
-                </svg>
-                <div class="donut-center">
-                  <div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--green)">248</div>
-                  <div style="font-size:.65rem;color:var(--text-muted);text-align:center">Total</div>
+        <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--sand)">
+          <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.8rem;font-weight:600">Status breakdown for the selected period</div>
+          <div class="d-flex gap-3 flex-wrap">
+            <asp:Repeater runat="server" ID="rptStatusBreakdown">
+              <ItemTemplate>
+                <div style='background:<%# Eval("Tint") %>;border-radius:8px;padding:.5rem .9rem;font-size:.82rem'>
+                  <strong style='color:<%# Eval("Colour") %>'><%# Eval("Count") %></strong> <%# Eval("Status") %>
                 </div>
-              </div>
-              <div class="d-flex flex-column gap-2 flex-grow-1">
-                <div style="display:flex;justify-content:space-between;font-size:.85rem"><span style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;background:var(--green);border-radius:2px;display:inline-block"></span>Cooked Meals</span><strong>42%</strong></div>
-                <div style="display:flex;justify-content:space-between;font-size:.85rem"><span style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;background:var(--amber);border-radius:2px;display:inline-block"></span>Bakery Items</span><strong>22%</strong></div>
-                <div style="display:flex;justify-content:space-between;font-size:.85rem"><span style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;background:var(--blue);border-radius:2px;display:inline-block"></span>Raw Produce</span><strong>18%</strong></div>
-                <div style="display:flex;justify-content:space-between;font-size:.85rem"><span style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;background:var(--purple);border-radius:2px;display:inline-block"></span>Packaged Food</span><strong>18%</strong></div>
-              </div>
-            </div>
+              </ItemTemplate>
+            </asp:Repeater>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="row g-4 mb-4">
-
-        <!-- Top Donors -->
-        <div class="col-lg-6">
-          <div class="fb-card p-0 overflow-hidden">
-            <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);display:flex;justify-content:space-between;align-items:center">
-              <h6 style="font-family:'DM Serif Display',serif;margin:0">Top Donors — April</h6>
-              <span class="badge-status badge-role-donor">Ranking</span>
-            </div>
-            <div class="table-responsive">
-              <table class="fb-table">
-                <thead><tr><th class="ps-3">Rank</th><th>Donor</th><th>Donations</th><th>Meals</th><th>Rating</th></tr></thead>
-                <tbody>
-                  <tr><td class="ps-3">🥇 1</td><td><strong>Ali's Restaurant</strong><br><small class="text-muted">Karachi</small></td><td>28</td><td>840</td><td>⭐ 4.9</td></tr>
-                  <tr><td class="ps-3">🥈 2</td><td><strong>Park View Catering</strong><br><small class="text-muted">Lahore</small></td><td>14</td><td>1,200</td><td>⭐ 4.8</td></tr>
-                  <tr><td class="ps-3">🥉 3</td><td><strong>Marriott Hotel</strong><br><small class="text-muted">Karachi</small></td><td>9</td><td>980</td><td>⭐ 4.7</td></tr>
-                  <tr><td class="ps-3">4</td><td><strong>Bake House LHR</strong><br><small class="text-muted">Lahore</small></td><td>7</td><td>280</td><td>⭐ 5.0</td></tr>
-                  <tr><td class="ps-3">5</td><td><strong>Sara Ahmed (Home)</strong><br><small class="text-muted">Islamabad</small></td><td>5</td><td>50</td><td>⭐ 5.0</td></tr>
-                </tbody>
-              </table>
+    <!-- Category donut -->
+    <div class="col-lg-5">
+      <div class="fb-card h-100">
+        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.5rem">Donations by Category</h6>
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+          <div class="donut-wrap">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="55" fill="none" stroke="var(--sand)" stroke-width="20"/>
+              <asp:Repeater runat="server" ID="rptDonut">
+                <ItemTemplate>
+                  <circle cx="70" cy="70" r="55" fill="none" stroke='<%# Eval("Colour") %>' stroke-width="20"
+                          stroke-dasharray='<%# Eval("DashArray") %>' stroke-dashoffset='<%# Eval("DashOffset") %>'/>
+                </ItemTemplate>
+              </asp:Repeater>
+            </svg>
+            <div class="donut-center">
+              <div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--green)"><asp:Literal runat="server" ID="litDonutTotal" /></div>
+              <div style="font-size:.65rem;color:var(--text-muted);text-align:center">Total</div>
             </div>
           </div>
-        </div>
-
-        <!-- Top NGOs -->
-        <div class="col-lg-6">
-          <div class="fb-card p-0 overflow-hidden">
-            <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);display:flex;justify-content:space-between;align-items:center">
-              <h6 style="font-family:'DM Serif Display',serif;margin:0">Top NGOs — April</h6>
-              <span class="badge-status badge-role-ngo">Performance</span>
-            </div>
-            <div class="table-responsive">
-              <table class="fb-table">
-                <thead><tr><th class="ps-3">NGO</th><th>Accepted</th><th>Delivered</th><th>Rate</th><th>Rating</th></tr></thead>
-                <tbody>
-                  <tr><td class="ps-3"><strong>Edhi Foundation</strong></td><td>72</td><td>70</td><td><span style="color:var(--green);font-weight:700">97%</span></td><td>⭐ 4.9</td></tr>
-                  <tr><td class="ps-3"><strong>Saylani Welfare</strong></td><td>64</td><td>61</td><td><span style="color:var(--green);font-weight:700">95%</span></td><td>⭐ 4.8</td></tr>
-                  <tr><td class="ps-3"><strong>Al-Khidmat</strong></td><td>48</td><td>45</td><td><span style="color:var(--amber);font-weight:700">94%</span></td><td>⭐ 4.7</td></tr>
-                  <tr><td class="ps-3"><strong>Akhuwat</strong></td><td>36</td><td>34</td><td><span style="color:var(--amber);font-weight:700">94%</span></td><td>⭐ 4.8</td></tr>
-                  <tr><td class="ps-3"><strong>JDC Foundation</strong></td><td>28</td><td>24</td><td><span style="color:var(--red);font-weight:700">86%</span></td><td>⭐ 4.5</td></tr>
-                </tbody>
-              </table>
-            </div>
+          <div class="d-flex flex-column gap-2 flex-grow-1">
+            <asp:Repeater runat="server" ID="rptCategoryLegend">
+              <ItemTemplate>
+                <div style="display:flex;justify-content:space-between;font-size:.85rem">
+                  <span style="display:flex;align-items:center;gap:.5rem">
+                    <span style='width:10px;height:10px;background:<%# Eval("Colour") %>;border-radius:2px;display:inline-block'></span>
+                    <%# Server.HtmlEncode(Convert.ToString(Eval("Category"))) %>
+                  </span>
+                  <strong><%# Eval("Percent") %>%</strong>
+                </div>
+              </ItemTemplate>
+            </asp:Repeater>
+            <asp:Panel runat="server" ID="pnlNoCategory" Visible="false" CssClass="note-inline">
+              No donations in this period.
+            </asp:Panel>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- Expiry Stats -->
-      <div class="row g-4 mb-4">
-        <div class="col-lg-5">
-          <div class="fb-card">
-            <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem"><i class="bi bi-clock-fill me-2 text-warning"></i>Expiry & Waste Analysis</h6>
-            <div class="d-flex flex-column gap-3">
-              <div><div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Delivered before expiry</span><strong style="color:var(--green)">94%</strong></div><div class="fb-progress"><div class="fb-progress-bar" style="width:94%"></div></div></div>
-              <div><div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Expired (not picked)</span><strong style="color:var(--red)">5.6%</strong></div><div class="fb-progress"><div class="fb-progress-bar" style="width:5.6%;background:var(--red)"></div></div></div>
-              <div><div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Avg. pickup time</span><strong>1h 22m</strong></div><div class="fb-progress"><div class="fb-progress-bar" style="width:55%;background:var(--blue)"></div></div></div>
-            </div>
-            <div style="background:var(--cream);border-radius:10px;padding:1rem;margin-top:1.2rem;display:flex;gap:1rem;align-items:center">
-              <i class="bi bi-lightbulb-fill" style="font-size:1.5rem;color:var(--amber)"></i>
-              <div style="font-size:.82rem;color:var(--text-muted)">14 donations expired this month. Sending donor reminders earlier could reduce expiry by ~40%.</div>
-            </div>
-          </div>
+  <div class="row g-4 mb-4">
+
+    <!-- Top donors -->
+    <div class="col-lg-6">
+      <div class="fb-card p-0 overflow-hidden">
+        <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);display:flex;justify-content:space-between;align-items:center">
+          <h6 style="font-family:'DM Serif Display',serif;margin:0">Top Donors</h6>
+          <span class="badge-status badge-role-donor">Ranking</span>
         </div>
-        <div class="col-lg-7">
-          <div class="fb-card">
-            <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem">Donations by City</h6>
-            <div class="chart-bar-wrap">
-              <div class="chart-bar-row"><span class="chart-bar-label">Karachi</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:100%;background:var(--green)">112</div></div><span class="chart-bar-val">112</span></div>
-              <div class="chart-bar-row"><span class="chart-bar-label">Lahore</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:70%;background:var(--green-mid)">78</div></div><span class="chart-bar-val">78</span></div>
-              <div class="chart-bar-row"><span class="chart-bar-label">Islamabad</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:40%;background:var(--blue)">44</div></div><span class="chart-bar-val">44</span></div>
-              <div class="chart-bar-row"><span class="chart-bar-label">Rawalpindi</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:18%;background:var(--amber)">20</div></div><span class="chart-bar-val">20</span></div>
-              <div class="chart-bar-row"><span class="chart-bar-label">Peshawar</span><div class="chart-bar-bg"><div class="chart-bar-fill" style="width:10%;background:var(--purple)">11</div></div><span class="chart-bar-val">11</span></div>
-            </div>
-          </div>
+        <div class="table-responsive">
+          <table class="fb-table">
+            <thead><tr><th class="ps-3">Rank</th><th>Donor</th><th>Donations</th><th>Meals</th><th>Rating</th></tr></thead>
+            <tbody>
+              <asp:Repeater runat="server" ID="rptTopDonors">
+                <ItemTemplate>
+                  <tr>
+                    <td class="ps-3"><%# RankLabel(Container.ItemIndex) %></td>
+                    <td><strong><%# Server.HtmlEncode(Convert.ToString(Eval("FullName"))) %></strong><br /><small class="text-muted"><%# CityOrDash(Eval("City")) %></small></td>
+                    <td><%# Eval("Donations") %></td>
+                    <td><%# Eval("Meals") %></td>
+                    <td><%# RatingText(Eval("Rating")) %></td>
+                  </tr>
+                </ItemTemplate>
+              </asp:Repeater>
+            </tbody>
+          </table>
         </div>
+        <asp:Panel runat="server" ID="pnlNoDonors" Visible="false" CssClass="empty-state" style="padding:2rem 1rem">
+          <i class="bi bi-people"></i><p>No donations in this period.</p>
+        </asp:Panel>
       </div>
+    </div>
 
-      <!-- Export options -->
+    <!-- Top NGOs -->
+    <div class="col-lg-6">
+      <div class="fb-card p-0 overflow-hidden">
+        <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);display:flex;justify-content:space-between;align-items:center">
+          <h6 style="font-family:'DM Serif Display',serif;margin:0">Top NGOs</h6>
+          <span class="badge-status badge-role-ngo">Performance</span>
+        </div>
+        <div class="table-responsive">
+          <table class="fb-table">
+            <thead><tr><th class="ps-3">NGO</th><th>Accepted</th><th>Delivered</th><th>Rate</th><th>Rating</th></tr></thead>
+            <tbody>
+              <asp:Repeater runat="server" ID="rptTopNgos">
+                <ItemTemplate>
+                  <tr>
+                    <td class="ps-3"><strong><%# Server.HtmlEncode(Convert.ToString(Eval("FullName"))) %></strong></td>
+                    <td><%# Eval("Accepted") %></td>
+                    <td><%# Eval("Delivered") %></td>
+                    <td><%# RateCell(Eval("Accepted"), Eval("Delivered")) %></td>
+                    <td><%# RatingText(Eval("Rating")) %></td>
+                  </tr>
+                </ItemTemplate>
+              </asp:Repeater>
+            </tbody>
+          </table>
+        </div>
+        <asp:Panel runat="server" ID="pnlNoNgos" Visible="false" CssClass="empty-state" style="padding:2rem 1rem">
+          <i class="bi bi-building"></i><p>No NGO has accepted a donation in this period.</p>
+        </asp:Panel>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+
+    <!-- Expiry & waste -->
+    <div class="col-lg-5">
       <div class="fb-card">
-        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem">Export Reports</h6>
-        <div class="row g-3">
-          <div class="col-sm-6 col-md-3">
-            <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center;cursor:pointer;transition:all .2s" onmouseenter="this.style.borderColor='var(--green)'" onmouseleave="this.style.borderColor='var(--sand)'" onclick="fbToast('Downloading Monthly Report PDF...')">
-              <i class="bi bi-file-earmark-pdf-fill" style="font-size:2rem;color:#dc2626;display:block;margin-bottom:.5rem"></i>
-              <div style="font-weight:600;font-size:.88rem">Monthly Report</div>
-              <div style="font-size:.76rem;color:var(--text-muted)">PDF Format</div>
-            </div>
+        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem"><i class="bi bi-clock-fill me-2 text-warning"></i>Expiry &amp; Waste Analysis</h6>
+        <div class="d-flex flex-column gap-3">
+          <div>
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Delivered before expiry</span><strong style="color:var(--green)"><asp:Literal runat="server" ID="litOnTimePct" /></strong></div>
+            <div class="fb-progress"><div class="fb-progress-bar" runat="server" id="barOnTime"></div></div>
           </div>
-          <div class="col-sm-6 col-md-3">
-            <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center;cursor:pointer;transition:all .2s" onmouseenter="this.style.borderColor='var(--green)'" onmouseleave="this.style.borderColor='var(--sand)'" onclick="fbToast('Downloading Donor List Excel...')">
-              <i class="bi bi-file-earmark-excel-fill" style="font-size:2rem;color:#16a34a;display:block;margin-bottom:.5rem"></i>
-              <div style="font-weight:600;font-size:.88rem">Donor List</div>
-              <div style="font-size:.76rem;color:var(--text-muted)">Excel Format</div>
-            </div>
+          <div>
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Expired without delivery</span><strong style="color:var(--red)"><asp:Literal runat="server" ID="litExpiredPct" /></strong></div>
+            <div class="fb-progress"><div class="fb-progress-bar" runat="server" id="barExpired" style="background:var(--red)"></div></div>
           </div>
-          <div class="col-sm-6 col-md-3">
-            <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center;cursor:pointer;transition:all .2s" onmouseenter="this.style.borderColor='var(--green)'" onmouseleave="this.style.borderColor='var(--sand)'" onclick="fbToast('Downloading NGO Performance Report...')">
-              <i class="bi bi-file-earmark-bar-graph-fill" style="font-size:2rem;color:var(--blue);display:block;margin-bottom:.5rem"></i>
-              <div style="font-weight:600;font-size:.88rem">NGO Performance</div>
-              <div style="font-size:.76rem;color:var(--text-muted)">Excel Format</div>
-            </div>
-          </div>
-          <div class="col-sm-6 col-md-3">
-            <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center;cursor:pointer;transition:all .2s" onmouseenter="this.style.borderColor='var(--green)'" onmouseleave="this.style.borderColor='var(--sand)'" onclick="fbToast('Downloading Waste Analytics CSV...')">
-              <i class="bi bi-file-earmark-text-fill" style="font-size:2rem;color:var(--amber);display:block;margin-bottom:.5rem"></i>
-              <div style="font-weight:600;font-size:.88rem">Waste Analytics</div>
-              <div style="font-size:.76rem;color:var(--text-muted)">CSV Format</div>
-            </div>
+          <div>
+            <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Avg. assign → pickup time</span><strong><asp:Literal runat="server" ID="litAvgPickup" /></strong></div>
+            <div class="note-inline">From volunteer assignment to confirmed pickup</div>
           </div>
         </div>
+        <div style="background:var(--cream);border-radius:10px;padding:1rem;margin-top:1.2rem;display:flex;gap:1rem;align-items:center">
+          <i class="bi bi-lightbulb-fill" style="font-size:1.5rem;color:var(--amber)"></i>
+          <div style="font-size:.82rem;color:var(--text-muted)"><asp:Literal runat="server" ID="litWasteNote" /></div>
+        </div>
       </div>
+    </div>
+
+    <!-- By city -->
+    <div class="col-lg-7">
+      <div class="fb-card">
+        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem">Donations by City</h6>
+        <div class="chart-bar-wrap">
+          <asp:Repeater runat="server" ID="rptCities">
+            <ItemTemplate>
+              <div class="chart-bar-row">
+                <span class="chart-bar-label"><%# Server.HtmlEncode(Convert.ToString(Eval("City"))) %></span>
+                <div class="chart-bar-bg"><div class="chart-bar-fill" style='width:<%# Eval("Percent") %>%;background:<%# Eval("Colour") %>'></div></div>
+                <span class="chart-bar-val"><%# Eval("Count") %></span>
+              </div>
+            </ItemTemplate>
+          </asp:Repeater>
+        </div>
+        <asp:Panel runat="server" ID="pnlNoCities" Visible="false" CssClass="note-inline">
+          No donations in this period.
+        </asp:Panel>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== Exports ===================== -->
+  <div class="fb-card no-print">
+    <h6 style="font-family:'DM Serif Display',serif;margin-bottom:.4rem">Export Reports</h6>
+    <p class="note-inline mb-3">
+      CSV files open directly in Excel and cover the selected period. The report itself prints through your browser —
+      choose "Save as PDF" as the destination.
+    </p>
+    <div class="row g-3">
+      <div class="col-sm-6 col-md-3">
+        <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center">
+          <i class="bi bi-file-earmark-pdf-fill" style="font-size:2rem;color:#dc2626;display:block;margin-bottom:.5rem"></i>
+          <div style="font-weight:600;font-size:.88rem">Full Report</div>
+          <div class="note-inline mb-2">Print / Save as PDF</div>
+          <button type="button" class="btn-sm-outline" onclick="window.print()">Print</button>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center">
+          <i class="bi bi-file-earmark-excel-fill" style="font-size:2rem;color:#16a34a;display:block;margin-bottom:.5rem"></i>
+          <div style="font-weight:600;font-size:.88rem">Donor List</div>
+          <div class="note-inline mb-2">CSV</div>
+          <asp:LinkButton runat="server" ID="btnExportDonors" CssClass="btn-sm-outline" OnClick="btnExportDonors_Click">Download</asp:LinkButton>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center">
+          <i class="bi bi-file-earmark-bar-graph-fill" style="font-size:2rem;color:var(--blue);display:block;margin-bottom:.5rem"></i>
+          <div style="font-weight:600;font-size:.88rem">NGO Performance</div>
+          <div class="note-inline mb-2">CSV</div>
+          <asp:LinkButton runat="server" ID="btnExportNgos" CssClass="btn-sm-outline" OnClick="btnExportNgos_Click">Download</asp:LinkButton>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <div style="border:1.5px solid var(--sand);border-radius:var(--radius);padding:1.2rem;text-align:center">
+          <i class="bi bi-file-earmark-text-fill" style="font-size:2rem;color:var(--amber);display:block;margin-bottom:.5rem"></i>
+          <div style="font-weight:600;font-size:.88rem">All Donations</div>
+          <div class="note-inline mb-2">CSV</div>
+          <asp:LinkButton runat="server" ID="btnExportDonations" CssClass="btn-sm-outline" OnClick="btnExportDonations_Click">Download</asp:LinkButton>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </asp:Content>

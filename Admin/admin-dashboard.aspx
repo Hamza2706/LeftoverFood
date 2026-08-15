@@ -7,11 +7,14 @@
       <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
           <h2 style="font-size:1.6rem;margin-bottom:.2rem">System Overview</h2>
-          <p class="text-muted" style="font-size:.9rem">All systems operational</p>
+          <%-- Was "All systems operational" — a claim nothing measured. --%>
+          <p class="text-muted" style="font-size:.9rem">Figures as at <asp:Literal ID="litAsAt" runat="server" /></p>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn-sm-outline" onclick="fbToast('Report generated!')"><i class="bi bi-download me-1"></i>Export Report</button>
-          <button class="btn-green" onclick="fbToast('Data refreshed!')"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+          <%-- Both buttons used to be fbToast() calls that did nothing. Export
+               now goes to the reports page, which has the real CSV export. --%>
+          <a class="btn-sm-outline" href="<%= ResolveUrl("~/Admin/reports.aspx") %>"><i class="bi bi-download me-1"></i>Reports &amp; Export</a>
+          <asp:LinkButton ID="btnRefresh" runat="server" CssClass="btn-green" OnClick="btnRefresh_Click"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</asp:LinkButton>
         </div>
       </div>
 
@@ -60,28 +63,50 @@
 
         <!-- All Donations Table -->
         <div class="col-lg-8">
-          <div class="fb-card p-0 overflow-hidden">
+          <%-- id is the anchor target for the sidebar's "All Donations" item,
+               which pointed at "#" until this section became real data. --%>
+          <div class="fb-card p-0 overflow-hidden" id="all-donations">
             <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:var(--sand)!important">
               <h6 class="mb-0" style="font-family:'DM Serif Display',serif">Recent Donations (All)</h6>
+              <%-- Buckets rather than raw statuses: the pipeline has nine
+                   statuses and nine filter buttons would not fit, so the
+                   in-between ones collapse into "In Progress". FilterBucket()
+                   in the code-behind is the single mapping. --%>
               <div class="d-flex gap-2" data-filter-group>
-                <button class="btn-sm-outline active" data-filter="all">All</button>
-                <button class="btn-sm-outline" data-filter="pending">Pending</button>
-                <button class="btn-sm-outline" data-filter="accepted">Accepted</button>
-                <button class="btn-sm-outline" data-filter="delivered">Delivered</button>
+                <button type="button" class="btn-sm-outline active" data-filter="all">All</button>
+                <button type="button" class="btn-sm-outline" data-filter="pending">Pending</button>
+                <button type="button" class="btn-sm-outline" data-filter="progress">In Progress</button>
+                <button type="button" class="btn-sm-outline" data-filter="delivered">Delivered</button>
+                <button type="button" class="btn-sm-outline" data-filter="closed">Closed</button>
               </div>
             </div>
             <div class="table-responsive">
               <table class="fb-table">
                 <thead><tr><th class="ps-3">Donor</th><th>Food</th><th>Qty</th><th>NGO</th><th>Volunteer</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody>
-                  <tr data-status="delivered"><td class="ps-3"><strong>Ali's Restaurant</strong><br><small class="text-muted">Karachi</small></td><td>Biryani</td><td>30</td><td>Edhi</td><td>Usman Ali</td><td><span class="badge-status badge-delivered">Delivered</span></td><td><button class="btn-sm-outline">View</button></td></tr>
-                  <tr data-status="accepted"><td class="ps-3"><strong>Park View Hall</strong><br><small class="text-muted">Lahore</small></td><td>Mixed</td><td>200</td><td>Saylani</td><td>Fatima Noor</td><td><span class="badge-status badge-accepted">Accepted</span></td><td><button class="btn-sm-outline">View</button></td></tr>
-                  <tr data-status="pending"><td class="ps-3"><strong>Marriott Hotel</strong><br><small class="text-muted">Karachi</small></td><td>Continental</td><td>150</td><td>—</td><td>—</td><td><span class="badge-status badge-pending">Pending</span></td><td><button class="btn-sm-amber">Assign</button></td></tr>
-                  <tr data-status="delivered"><td class="ps-3"><strong>Sara Ahmed</strong><br><small class="text-muted">Islamabad</small></td><td>Dal Roti</td><td>10</td><td>Al-Khidmat</td><td>Zain Malik</td><td><span class="badge-status badge-delivered">Delivered</span></td><td><button class="btn-sm-outline">View</button></td></tr>
-                  <tr data-status="rejected"><td class="ps-3"><strong>Home Donor</strong><br><small class="text-muted">Rawalpindi</small></td><td>Leftover</td><td>5</td><td>—</td><td>—</td><td><span class="badge-status badge-rejected">Rejected</span></td><td><button class="btn-sm-outline">View</button></td></tr>
+                  <asp:Repeater ID="rptRecentDonations" runat="server">
+                    <ItemTemplate>
+                      <tr data-status='<%# FilterBucket(Eval("Status")) %>'>
+                        <td class="ps-3">
+                          <strong><%# Server.HtmlEncode(PartyName(Eval("DonorOrg"), Eval("DonorName"))) %></strong>
+                          <br /><small class="text-muted"><%# Server.HtmlEncode(Dash(Eval("City"))) %></small>
+                        </td>
+                        <td><%# Server.HtmlEncode(Dash(Eval("FoodDescription"))) %></td>
+                        <td><%# Server.HtmlEncode(Dash(Eval("Quantity"))) %></td>
+                        <td><%# Server.HtmlEncode(PartyName(Eval("NgoOrg"), Eval("NgoName"))) %></td>
+                        <td><%# Server.HtmlEncode(Dash(Eval("VolunteerName"))) %></td>
+                        <td><span class="badge-status <%# StatusBadge(Eval("Status")) %>"><%# Eval("Status") %></span></td>
+                        <td><%# ActionLink(Eval("Status")) %></td>
+                      </tr>
+                    </ItemTemplate>
+                  </asp:Repeater>
                 </tbody>
               </table>
             </div>
+            <asp:Panel ID="pnlNoDonations" runat="server" Visible="false" CssClass="text-muted"
+                       Style="font-size:.85rem;padding:1rem;text-align:center">
+              No donations have been posted yet.
+            </asp:Panel>
           </div>
         </div>
 
@@ -114,36 +139,48 @@
           </div>
 
           <!-- System Stats -->
+          <%-- Every figure here was invented (94% / 88% / 72% / +15%), and the
+               fulfilment one actively contradicted the reports page, which
+               measures the same thing and got 50%. All four are now computed,
+               and fulfilment reuses reports.aspx.cs's exact definition. --%>
           <div class="fb-card">
             <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem">System Health</h6>
             <div class="d-flex flex-column gap-3">
               <div>
-                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Donation Fulfillment</span><strong style="font-size:.85rem;color:var(--green)">94%</strong></div>
-                <div class="fb-progress"><div class="fb-progress-bar" style="width:94%"></div></div>
+                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Donation Fulfilment</span><strong style="font-size:.85rem;color:var(--green)"><asp:Literal ID="litFulfilment" runat="server" /></strong></div>
+                <div class="fb-progress"><div class="fb-progress-bar" runat="server" id="barFulfilment"></div></div>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem"><asp:Literal ID="litFulfilmentNote" runat="server" /></div>
               </div>
               <div>
-                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">NGO Response Rate</span><strong style="font-size:.85rem">88%</strong></div>
-                <div class="fb-progress"><div class="fb-progress-bar" style="width:88%"></div></div>
+                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">NGO Response Rate</span><strong style="font-size:.85rem"><asp:Literal ID="litNgoResponse" runat="server" /></strong></div>
+                <div class="fb-progress"><div class="fb-progress-bar" runat="server" id="barNgoResponse"></div></div>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem"><asp:Literal ID="litNgoResponseNote" runat="server" /></div>
               </div>
               <div>
-                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Volunteer Availability</span><strong style="font-size:.85rem;color:var(--amber)">72%</strong></div>
-                <div class="fb-progress"><div class="fb-progress-bar" style="width:72%;background:var(--amber)"></div></div>
+                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Volunteers Free Now</span><strong style="font-size:.85rem;color:var(--amber)"><asp:Literal ID="litVolunteerFree" runat="server" /></strong></div>
+                <div class="fb-progress"><div class="fb-progress-bar" runat="server" id="barVolunteerFree" style="background:var(--amber)"></div></div>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem"><asp:Literal ID="litVolunteerFreeNote" runat="server" /></div>
               </div>
               <div>
-                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">User Growth (month)</span><strong style="font-size:.85rem;color:var(--blue)">+15%</strong></div>
-                <div class="fb-progress"><div class="fb-progress-bar" style="width:55%;background:var(--blue)"></div></div>
+                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">New Users (this month)</span><strong style="font-size:.85rem;color:var(--blue)"><asp:Literal ID="litUserGrowth" runat="server" /></strong></div>
+                <div class="fb-progress"><div class="fb-progress-bar" runat="server" id="barUserGrowth" style="background:var(--blue)"></div></div>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem"><asp:Literal ID="litUserGrowthNote" runat="server" /></div>
               </div>
             </div>
           </div>
 
           <!-- Quick Actions -->
+          <%-- Were four fbToast() buttons. "Add New User" and "Register New NGO"
+               are gone rather than restyled: this app has no admin-side account
+               creation at all — registration is self-serve at ~/Login.aspx and
+               an admin approves it. These four go to screens that exist. --%>
           <div class="fb-card">
             <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem">Quick Actions</h6>
             <div class="d-flex flex-column gap-2">
-              <button class="btn-sm-outline w-100 text-start py-2 px-3" onclick="fbToast('Opening user management...')"><i class="bi bi-person-plus me-2 text-success"></i>Add New User</button>
-              <button class="btn-sm-outline w-100 text-start py-2 px-3" onclick="fbToast('Opening NGO management...')"><i class="bi bi-building-add me-2 text-warning"></i>Register New NGO</button>
-              <button class="btn-sm-outline w-100 text-start py-2 px-3" onclick="fbToast('Report downloading...')"><i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Download Monthly Report</button>
-              <button class="btn-sm-outline w-100 text-start py-2 px-3" onclick="fbToast('Broadcast sent!')"><i class="bi bi-megaphone me-2 text-danger"></i>Send Broadcast</button>
+              <a class="btn-sm-outline w-100 text-start py-2 px-3" href="<%= ResolveUrl("~/Admin/food-approvals.aspx") %>"><i class="bi bi-clipboard2-check me-2 text-success"></i>Review Food Approvals</a>
+              <a class="btn-sm-outline w-100 text-start py-2 px-3" href="<%= ResolveUrl("~/Admin/volunteer-assign.aspx") %>"><i class="bi bi-person-check me-2 text-warning"></i>Assign Volunteers</a>
+              <a class="btn-sm-outline w-100 text-start py-2 px-3" href="<%= ResolveUrl("~/Admin/reports.aspx") %>"><i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Reports &amp; Export</a>
+              <a class="btn-sm-outline w-100 text-start py-2 px-3" href="<%= ResolveUrl("~/Admin/emergency-mode.aspx") %>"><i class="bi bi-megaphone me-2 text-danger"></i>Send Broadcast</a>
             </div>
           </div>
 
@@ -152,7 +189,7 @@
 
       <!-- Users Table -->
       <div class="mt-4">
-        <div class="fb-card p-0 overflow-hidden">
+        <div class="fb-card p-0 overflow-hidden" id="all-users">
           <div class="p-3 border-bottom" style="border-color:var(--sand)!important">
             <h6 class="mb-0" style="font-family:'DM Serif Display',serif">Registered Users</h6>
           </div>

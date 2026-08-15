@@ -15,6 +15,27 @@ namespace LeftoverFood
             topbarAvatar.Style["color"] = RoleAvatarColor(SessionHelper.GetRole());
 
             BindNotificationBell();
+
+            // No session, nothing to search.
+            pnlSearch.Visible = HttpContext.Current.Session["UserID"] != null;
+
+            // Keep the term visible after landing on the results page, so the
+            // box reflects what is actually being shown.
+            if (!IsPostBack && Request.QueryString["q"] != null)
+                txtSearch.Text = Request.QueryString["q"];
+        }
+
+        /// <summary>
+        /// The topbar search. Hands off to ~/Search.aspx, which scopes results
+        /// to the signed-in role — this master is shared by all four, so the
+        /// box itself must not assume what the user is allowed to see.
+        /// </summary>
+        protected void btnSearch_Click(object sender, EventArgs e)
+        {
+            string term = (txtSearch.Text ?? "").Trim();
+            if (term.Length == 0) return;
+
+            Response.Redirect("~/Search.aspx?q=" + Server.UrlEncode(term));
         }
 
         /// <summary>

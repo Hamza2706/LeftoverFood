@@ -61,6 +61,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+/* ── Fragment anchors survive late reflow ──
+   The sidebar's "All Donations", "All Users", "My Donations", "Our Volunteers",
+   "My Tasks" and "Completed" items are #fragment links into their role's own
+   dashboard. The browser jumps to the target as soon as it parses the document,
+   but this app loads Bootstrap and two web fonts from a CDN afterwards — on the
+   admin dashboard that reflow grows the page from ~2.8k to ~5k pixels, which
+   leaves the target hundreds of pixels off-screen and makes the link look
+   broken.
+
+   Re-applying the jump once everything has settled fixes it. Guarded on every
+   step so a missing id, an old browser without document.fonts, or a hash that
+   names nothing simply does nothing. */
+(function () {
+  function jumpToHash() {
+    if (!location.hash || location.hash.length < 2) return;
+
+    // getElementById rather than querySelector: a hash can contain characters
+    // that are not a valid CSS selector and would throw.
+    var target = document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView();
+  }
+
+  window.addEventListener('load', function () {
+    jumpToHash();
+
+    // Fonts usually land after 'load' and are what actually moves the content.
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then)
+      document.fonts.ready.then(jumpToHash);
+  });
+})();
+
 /* Toast styles injected via JS */
 const toastStyle = document.createElement('style');
 toastStyle.textContent = `

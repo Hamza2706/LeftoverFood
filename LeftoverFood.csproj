@@ -77,20 +77,24 @@
     <Content Include="assets\css\style.css" />
     <Content Include="Controls\RoleSidebar.ascx" />
     <Content Include="assets\js\main.js" />
+    <Content Include="assets\js\fb-map.js" />
     <Content Include="Database\schema.sql" />
     <Content Include="Database\phase4_notifications.sql" />
+    <Content Include="Database\phase5_maps.sql" />
     <Content Include="Donor\DonorMaster.master" />
     <Content Include="Donor\donate-form.aspx" />
     <Content Include="Donor\donor-dashboard.aspx" />
     <Content Include="Donor\notifications.aspx" />
-    <Content Include="Donor\profile.aspx" />
-    <Content Include="Donor\ratings.aspx" />
     <Content Include="Donor\track-donation.aspx" />
     <Content Include="Error.aspx" />
     <Content Include="Global.asax" />
     <Content Include="index.html" />
     <Content Include="login.aspx" />
     <Content Include="Notifications.aspx" />
+    <Content Include="Profile.aspx" />
+    <Content Include="Ratings.aspx" />
+    <Content Include="Search.aspx" />
+    <Content Include="LocationHandler.ashx" />
     <Content Include="NGO\NGOMaster.master" />
     <Content Include="NGO\ngo-active-requests.aspx" />
     <Content Include="NGO\ngo-dashboard.aspx" />
@@ -187,20 +191,6 @@
     <Compile Include="Donor\notifications.aspx.designer.cs">
       <DependentUpon>notifications.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Donor\profile.aspx.cs">
-      <DependentUpon>profile.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Donor\profile.aspx.designer.cs">
-      <DependentUpon>profile.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Donor\ratings.aspx.cs">
-      <DependentUpon>ratings.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Donor\ratings.aspx.designer.cs">
-      <DependentUpon>ratings.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Donor\track-donation.aspx.cs">
       <DependentUpon>track-donation.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -246,6 +236,11 @@
     <Compile Include="Controls\RoleSidebar.ascx.designer.cs">
       <DependentUpon>RoleSidebar.ascx</DependentUpon>
     </Compile>
+    <Compile Include="GeocodingService.cs" />
+    <Compile Include="LocationHandler.ashx.cs">
+      <DependentUpon>LocationHandler.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="FraudDetectionService.cs" />
     <Compile Include="NotificationService.cs" />
     <Compile Include="Notifications.aspx.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
@@ -253,6 +248,27 @@
     </Compile>
     <Compile Include="Notifications.aspx.designer.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Profile.aspx.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Profile.aspx.designer.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Ratings.aspx.cs">
+      <DependentUpon>Ratings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Ratings.aspx.designer.cs">
+      <DependentUpon>Ratings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Search.aspx.cs">
+      <DependentUpon>Search.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Search.aspx.designer.cs">
+      <DependentUpon>Search.aspx</DependentUpon>
     </Compile>
     <Compile Include="PasswordHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

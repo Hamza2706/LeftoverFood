@@ -20,6 +20,12 @@ namespace LeftoverFood
 
         protected global::System.Web.UI.WebControls.ContentPlaceHolder PageHeading;
 
+        protected global::System.Web.UI.WebControls.Panel pnlSearch;
+
+        protected global::System.Web.UI.WebControls.LinkButton btnSearch;
+
+        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+
         protected global::System.Web.UI.HtmlControls.HtmlAnchor notifBell;
 
         protected global::System.Web.UI.WebControls.Literal litBellBadge;

@@ -58,7 +58,7 @@
       <div class="row g-4">
         <!-- Donations Table -->
         <div class="col-lg-8">
-          <div class="fb-card p-0 overflow-hidden">
+          <div class="fb-card p-0 overflow-hidden" id="my-donations">
             <div class="d-flex align-items-center justify-content-between p-3 border-bottom" style="border-color:var(--sand)!important">
               <h6 class="mb-0 fw-600" style="font-family:'DM Serif Display',serif">Recent Donations</h6>
             </div>
@@ -94,38 +94,67 @@
         <div class="col-lg-4 d-flex flex-column gap-4">
 
           <!-- Impact Card -->
+          <%-- All three bars were literals (1,240 / 2,000 meals, 94% success,
+               860 kg saved) and none had anything behind it.
+
+               "Food Saved (kg)" is gone rather than wired: FoodDonations has no
+               weight column at all, and Quantity is free text ("30 Plates",
+               "1 Kg") that cannot be summed or converted — the same limitation
+               Phases 6b and 6d both ran into. The "/ 2,000" meals target is
+               gone too; no goal exists anywhere in this system. --%>
           <div class="fb-card">
             <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem">Your Impact 🌱</h6>
             <div class="d-flex flex-column gap-3">
               <div>
-                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Meals Provided</span><strong style="font-size:.85rem">1,240 / 2,000</strong></div>
-                <div class="fb-progress"><div class="fb-progress-bar" style="width:62%"></div></div>
+                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Delivery Success Rate</span><strong style="font-size:.85rem;color:var(--green)"><asp:Literal ID="litSuccessRate" runat="server" /></strong></div>
+                <div class="fb-progress"><div class="fb-progress-bar" runat="server" id="barSuccessRate"></div></div>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem"><asp:Literal ID="litSuccessNote" runat="server" /></div>
               </div>
               <div>
-                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Delivery Success Rate</span><strong style="font-size:.85rem;color:var(--green)">94%</strong></div>
-                <div class="fb-progress"><div class="fb-progress-bar" style="width:94%"></div></div>
+                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Meals Provided</span><strong style="font-size:.85rem"><asp:Literal ID="litImpactMeals" runat="server" Text="0" /></strong></div>
+                <div style="font-size:.72rem;color:var(--text-muted)">counted from servings on delivered donations</div>
               </div>
               <div>
-                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Food Saved (kg)</span><strong style="font-size:.85rem">860 kg</strong></div>
-                <div class="fb-progress"><div class="fb-progress-bar" style="width:43%"></div></div>
+                <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Still In Progress</span><strong style="font-size:.85rem;color:var(--amber)"><asp:Literal ID="litImpactInProgress" runat="server" Text="0" /></strong></div>
+                <div style="font-size:.72rem;color:var(--text-muted)">posted, approved, or out for delivery</div>
               </div>
             </div>
+
+            <%-- Was a "Gold Donor Badge — Awarded for 40+ donations". There is
+                 no badge system in this app. The rating below is real, and the
+                 trust ladder it links to is the one genuinely computed thing in
+                 this space (Phase 6c). --%>
             <div style="background:var(--cream);border-radius:10px;padding:1rem;margin-top:1.2rem;text-align:center">
-              <i class="bi bi-award-fill text-warning fs-4 d-block mb-1"></i>
-              <div style="font-size:.82rem;font-weight:600">Gold Donor Badge</div>
-              <div style="font-size:.75rem;color:var(--text-muted)">Awarded for 40+ donations</div>
+              <i class="bi bi-star-fill text-warning fs-4 d-block mb-1"></i>
+              <div style="font-size:.82rem;font-weight:600"><asp:Literal ID="litTrust" runat="server" /></div>
+              <div style="font-size:.75rem;color:var(--text-muted)">
+                <a href="<%= ResolveUrl("~/Ratings.aspx") %>">View your ratings &amp; trust level</a>
+              </div>
             </div>
           </div>
 
           <!-- Recent Activity -->
+          <%-- Was four hardcoded timeline entries dated April 2025. Drawn from
+               this donor's own notifications, the same real per-user event log
+               ~/Profile.aspx uses. --%>
           <div class="fb-card">
             <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem">Recent Activity</h6>
             <div class="timeline">
-              <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Today, 10:30 AM</div><div class="tl-text">Donation of 30 plates delivered by Edhi Foundation</div></div>
-              <div class="tl-item"><div class="tl-dot" style="background:var(--amber)"></div><div class="tl-time">Yesterday, 3:15 PM</div><div class="tl-text">Saylani accepted your 80-plate donation</div></div>
-              <div class="tl-item"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-time">Apr 20, 9:00 AM</div><div class="tl-text">New donation posted: Continental Buffet – 150 plates</div></div>
-              <div class="tl-item"><div class="tl-dot"></div><div class="tl-time">Apr 18, 6:00 PM</div><div class="tl-text">Dal & Roti donation delivered successfully</div></div>
+              <asp:Repeater ID="rptActivity" runat="server">
+                <ItemTemplate>
+                  <div class="tl-item">
+                    <div class="tl-dot" style='background:<%# ActivityColour(Eval("Type")) %>'></div>
+                    <div class="tl-time"><%# Convert.ToDateTime(Eval("CreatedAt")).ToString("d MMM, h:mm tt") %></div>
+                    <div class="tl-text"><%# Server.HtmlEncode(Convert.ToString(Eval("Message"))) %></div>
+                  </div>
+                </ItemTemplate>
+              </asp:Repeater>
             </div>
+            <asp:Panel ID="pnlNoActivity" runat="server" Visible="false">
+              <div style="font-size:.85rem;color:var(--text-muted);padding:.5rem 0">
+                Nothing yet. Post a donation and its progress will appear here.
+              </div>
+            </asp:Panel>
           </div>
 
         </div>

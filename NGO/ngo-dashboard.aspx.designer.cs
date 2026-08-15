@@ -25,5 +25,27 @@ namespace LeftoverFood.NGO
         protected global::System.Web.UI.WebControls.Repeater rptAvailable;
 
         protected global::System.Web.UI.WebControls.Panel pnlNoAvailable;
+
+        protected global::System.Web.UI.WebControls.Literal litVerifiedBadge;
+
+        protected global::System.Web.UI.WebControls.Literal litInTransit;
+
+        protected global::System.Web.UI.WebControls.Literal litMealsServed;
+
+        protected global::System.Web.UI.WebControls.Repeater rptActiveDeliveries;
+
+        protected global::System.Web.UI.WebControls.Panel pnlNoActive;
+
+        protected global::System.Web.UI.WebControls.Repeater rptVolunteers;
+
+        protected global::System.Web.UI.WebControls.Panel pnlNoVolunteers;
+
+        protected global::System.Web.UI.WebControls.Literal litMonthLabel;
+
+        protected global::System.Web.UI.WebControls.Literal litMonthAccepted;
+
+        protected global::System.Web.UI.WebControls.Literal litMonthMeals;
+
+        protected global::System.Web.UI.WebControls.Literal litMonthFulfilment;
     }
 }

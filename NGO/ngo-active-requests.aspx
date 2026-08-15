@@ -1,4 +1,4 @@
-<%@ Page Title="Active Requests – FoodBridge NGO" Language="C#" MasterPageFile="~/NGO/NGOMaster.master" AutoEventWireup="true" CodeBehind="ngo-active-requests.aspx.cs" Inherits="LeftoverFood.NGO.ngo_active_requests" %>
+﻿<%@ Page Title="Active Requests – FoodBridge NGO" Language="C#" MasterPageFile="~/NGO/NGOMaster.master" AutoEventWireup="true" CodeBehind="ngo-active-requests.aspx.cs" Inherits="LeftoverFood.NGO.ngo_active_requests" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="NGOHeadContent" runat="server">
   <style>
@@ -16,6 +16,7 @@
     .mt-label { font-size:.65rem; color:var(--text-muted); }
     .map-mini { background:linear-gradient(145deg,#e8f5ee,#d0f0e0); border-radius:8px; height:120px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:.3rem; font-size:.78rem; color:var(--text-muted); border:1.5px dashed var(--green-light); }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="NGOPageHeading" runat="server">Active Requests</asp:Content>
@@ -65,6 +66,21 @@
                       <div><i class="bi bi-person-fill me-2 text-muted"></i><strong><%# Eval("DonorName") %></strong></div>
                       <div><i class="bi bi-egg-fried me-2 text-muted"></i><%# Eval("Quantity") %> <%# Eval("FoodDescription") %></div>
                       <div><i class="bi bi-geo-alt-fill me-2 text-danger"></i><%# Eval("PickupAddress") %>, <%# Eval("City") %></div>
+
+                      <%-- Pickup map (Phase 5). Renders only when the address
+                           resolved to coordinates; otherwise the address line
+                           above is all the NGO gets, which is honest. --%>
+                      <div class="fb-map mt-2"
+                           style='<%# HasCoords(Eval("Latitude")) ? "height:150px;border-radius:8px" : "display:none" %>'
+                           data-lat='<%# Coord(Eval("Latitude")) %>'
+                           data-lng='<%# Coord(Eval("Longitude")) %>'
+                           data-precision='<%# Eval("GeoPrecision") %>'
+                           data-label='<%# Server.HtmlEncode(Convert.ToString(Eval("PickupAddress"))) %>'
+                           data-tile-url='<%# MapTileUrl %>'
+                           data-attribution='<%# MapAttribution %>'></div>
+                      <div style='font-size:.72rem;color:var(--text-muted);margin-top:.25rem;<%# Convert.ToString(Eval("GeoPrecision")) == "City" ? "" : "display:none" %>'>
+                        Approximate — city level only
+                      </div>
                       <div><i class="bi bi-bicycle me-2" style="color:var(--blue)"></i>Volunteer: <strong><%# VolunteerNameOrDash(Eval("VolunteerName")) %></strong></div>
                     </div>
                     <!-- Mini Timeline -->
@@ -141,4 +157,9 @@
         </div>
       </div>
 
+</asp:Content>
+
+<asp:Content ID="ContentFooter" ContentPlaceHolderID="NGOFooterScripts" runat="server">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="<%= ResolveUrl("~/assets/js/fb-map.js") %>"></script>
 </asp:Content>

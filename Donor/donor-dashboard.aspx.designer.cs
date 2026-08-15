@@ -27,5 +27,21 @@ namespace LeftoverFood.Donor
         protected global::System.Web.UI.WebControls.Repeater rptDonations;
 
         protected global::System.Web.UI.WebControls.Panel pnlNoDonations;
+
+        protected global::System.Web.UI.WebControls.Literal litSuccessRate;
+
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl barSuccessRate;
+
+        protected global::System.Web.UI.WebControls.Literal litSuccessNote;
+
+        protected global::System.Web.UI.WebControls.Literal litImpactMeals;
+
+        protected global::System.Web.UI.WebControls.Literal litImpactInProgress;
+
+        protected global::System.Web.UI.WebControls.Literal litTrust;
+
+        protected global::System.Web.UI.WebControls.Repeater rptActivity;
+
+        protected global::System.Web.UI.WebControls.Panel pnlNoActivity;
     }
 }

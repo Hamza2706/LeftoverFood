@@ -1,21 +1,43 @@
 <%@ Page Title="Emergency Mode – FoodBridge Admin" Language="C#" MasterPageFile="~/Admin/AdminMaster.master" AutoEventWireup="true" CodeBehind="emergency-mode.aspx.cs" Inherits="LeftoverFood.Admin.emergency_mode" %>
 
+<%--
+  Phase 6a.
+
+  The mockup this replaces was entirely client-side: a JS toggle that flipped a
+  CSS class and showed a toast, three hardcoded donations in the priority queue,
+  a hardcoded history timeline, and buttons that called fbToast() and did
+  nothing else. Nothing survived a page refresh.
+
+  Several of its promises had no implementation behind them anywhere in the app
+  and were removed rather than restyled — see the About panel below and the
+  Phase 6a notes in IMPLEMENTATION_ROADMAP.md:
+
+    - "SMS broadcast": there is no SMS provider in this project, and adding one
+      means a paid gateway account. Notifications are in-app plus email.
+    - "48-hr Fast Track — approval time reduced to 15 minutes (from standard
+      2 hours)": there is no approval SLA, no timer, and nothing measuring how
+      long an approval takes. The whole card was fiction.
+    - "Auto-Assign to nearest NGO": no auto-assignment exists. NGOs claim
+      donations themselves (Phase 2) and admins assign volunteers by hand
+      (Phase 3). Phase 5 also established that most addresses only geocode to
+      city level, so "nearest" is not something this data supports.
+    - Ramadan Mode's Iftar/Sehri windows and "auto-prioritize dates, fruits,
+      drinks": time-window scheduling needs a scheduler this app does not have.
+      It is now what it can honestly be — a preset that fills in the form.
+--%>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="AdminHeadContent" runat="server">
   <style>
-    .emergency-banner { background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; border-radius:var(--radius); padding:1.5rem 2rem; display:flex; align-items:center; gap:1.2rem; }
+    .emergency-banner { background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; border-radius:var(--radius); padding:1.5rem 2rem; display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; }
     .emergency-banner.inactive { background:linear-gradient(135deg,#374151,#1f2937); }
     .pulse { animation:pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .mode-toggle { width:64px; height:32px; background:var(--sand-dark); border-radius:50px; position:relative; cursor:pointer; transition:background .3s; border:none; }
-    .mode-toggle.on { background:#dc2626; }
-    .mode-toggle::after { content:''; position:absolute; width:26px; height:26px; background:#fff; border-radius:50%; top:3px; left:3px; transition:left .3s; }
-    .mode-toggle.on::after { left:35px; }
-    .priority-card { border-radius:var(--radius); padding:1.4rem; border:2px solid; }
-    .priority-high { border-color:#dc2626; background:#fef2f2; }
-    .priority-med  { border-color:var(--amber); background:#fff7ed; }
-    .priority-low  { border-color:var(--green); background:#f0fdf4; }
     .ramadan-banner { background:linear-gradient(135deg,#0f172a,#1e293b); color:#fff; border-radius:var(--radius); padding:1.5rem; position:relative; overflow:hidden; }
     .ramadan-banner::before { content:'🌙'; position:absolute; right:1.5rem; top:50%; transform:translateY(-50%); font-size:4rem; opacity:.2; }
+    .note-inline { font-size:.78rem; color:var(--text-muted); }
+    .prio-row.is-priority { background:#fef2f2; }
+    .hist-item { border-left:3px solid var(--sand-dark); padding:.1rem 0 .9rem 1rem; margin-left:.3rem; }
+    .hist-item.active { border-left-color:#dc2626; }
   </style>
 </asp:Content>
 
@@ -23,249 +45,310 @@
 
 <asp:Content ID="Content3" ContentPlaceHolderID="AdminMainContent" runat="server">
 
-      <!-- Emergency Status Banner -->
-      <div class="emergency-banner inactive mb-4" id="emergencyBanner">
-        <div style="width:50px;height:50px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">
-          <i class="bi bi-shield-exclamation"></i>
-        </div>
-        <div style="flex:1">
-          <div style="font-family:'DM Serif Display',serif;font-size:1.3rem">Emergency Mode — <span id="statusText">INACTIVE</span></div>
-          <div style="font-size:.85rem;opacity:.75;margin-top:.2rem" id="statusDesc">System is running normally. Enable Emergency Mode for priority-based distribution.</div>
-        </div>
-        <div style="text-align:center">
-          <button class="mode-toggle" id="emergencyToggle" onclick="toggleEmergency()"></button>
-          <div style="font-size:.72rem;opacity:.65;margin-top:.3rem">Click to toggle</div>
+  <asp:Panel runat="server" ID="pnlMessage" Visible="false" CssClass="alert mb-3">
+    <asp:Literal runat="server" ID="litMessage" />
+  </asp:Panel>
+
+  <!-- ===================== Status banner ===================== -->
+
+  <asp:Panel runat="server" ID="pnlActive" Visible="false" CssClass="emergency-banner mb-4">
+    <div style="width:50px;height:50px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">
+      <i class="bi bi-shield-exclamation pulse"></i>
+    </div>
+    <div style="flex:1;min-width:240px">
+      <div style="font-family:'DM Serif Display',serif;font-size:1.3rem">Emergency Mode — ACTIVE</div>
+      <div style="font-size:.85rem;opacity:.85;margin-top:.2rem"><asp:Literal runat="server" ID="litActiveSummary" /></div>
+    </div>
+    <div style="text-align:center">
+      <asp:LinkButton runat="server" ID="btnDeactivate" CssClass="btn-white px-4"
+                      OnClick="btnDeactivate_Click"
+                      OnClientClick="return confirm('Deactivate emergency mode? Everyone notified will not be told automatically.');">
+        <i class="bi bi-toggle-off me-1"></i>Deactivate
+      </asp:LinkButton>
+      <div style="font-size:.72rem;opacity:.65;margin-top:.3rem">Ends the active emergency</div>
+    </div>
+  </asp:Panel>
+
+  <asp:Panel runat="server" ID="pnlInactive" Visible="false" CssClass="emergency-banner inactive mb-4">
+    <div style="width:50px;height:50px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">
+      <i class="bi bi-shield-check"></i>
+    </div>
+    <div style="flex:1">
+      <div style="font-family:'DM Serif Display',serif;font-size:1.3rem">Emergency Mode — INACTIVE</div>
+      <div style="font-size:.85rem;opacity:.75;margin-top:.2rem">System is running normally. Activate below to broadcast an alert and start flagging priority donations.</div>
+    </div>
+  </asp:Panel>
+
+  <div class="row g-4">
+
+    <!-- ===================== Left column ===================== -->
+    <div class="col-lg-8 d-flex flex-column gap-4">
+
+      <!-- What Emergency Mode actually does -->
+      <div class="fb-card">
+        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem"><i class="bi bi-info-circle-fill me-2 text-primary"></i>What Emergency Mode Does</h6>
+        <p style="font-size:.92rem;color:var(--text-muted);line-height:1.8;margin-bottom:1rem">
+          Emergency Mode is for high-demand periods — <strong>floods, displacement, fires, Ramadan, food shortages</strong>.
+          Activating it broadcasts an alert and records the emergency; these four things are what it actually changes:
+        </p>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div style="background:var(--cream);border-radius:10px;padding:1rem">
+              <i class="bi bi-lightning-charge-fill text-warning d-block mb-1 fs-5"></i>
+              <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Immediate Alerts</div>
+              <div style="font-size:.82rem;color:var(--text-muted)">Every targeted NGO and volunteer gets an in-app notification, plus email if SMTP is configured. <span class="note-inline">No SMS — this project has no SMS gateway.</span></div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--cream);border-radius:10px;padding:1rem">
+              <i class="bi bi-sort-down-alt text-danger d-block mb-1 fs-5"></i>
+              <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Priority Queue</div>
+              <div style="font-size:.82rem;color:var(--text-muted)">Flag donations below; flagged ones sort first on Food Approvals and in every NGO's available-donations list.</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--cream);border-radius:10px;padding:1rem">
+              <i class="bi bi-geo-fill text-primary d-block mb-1 fs-5"></i>
+              <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Area Targeting</div>
+              <div style="font-size:.82rem;color:var(--text-muted)">The broadcast is filtered by each recipient's registered city. <span class="note-inline">It does not reroute donations — nothing in this app routes.</span></div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--cream);border-radius:10px;padding:1rem">
+              <i class="bi bi-journal-text text-success d-block mb-1 fs-5"></i>
+              <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Recorded</div>
+              <div style="font-size:.82rem;color:var(--text-muted)">Every activation and broadcast is stored with who sent it, when, and how many people it reached.</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="row g-4">
+      <!-- Activate -->
+      <div class="fb-card">
+        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem"><i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>Activate Emergency Mode</h6>
+        <div class="row g-3">
 
-        <!-- Left Column -->
-        <div class="col-lg-8 d-flex flex-column gap-4">
-
-          <!-- What is Emergency Mode -->
-          <div class="fb-card">
-            <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem"><i class="bi bi-info-circle-fill me-2 text-primary"></i>About Emergency Mode</h6>
-            <p style="font-size:.92rem;color:var(--text-muted);line-height:1.8;margin-bottom:1rem">Emergency Mode activates a priority-based food distribution system during high-demand periods such as <strong>natural disasters, Ramadan, floods, or communal crises</strong>. When active:</p>
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <div style="background:var(--cream);border-radius:10px;padding:1rem">
-                  <i class="bi bi-lightning-charge-fill text-warning d-block mb-1 fs-5"></i>
-                  <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Instant NGO Alerts</div>
-                  <div style="font-size:.82rem;color:var(--text-muted)">All NGOs in affected area get immediate SMS + email broadcast</div>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div style="background:var(--cream);border-radius:10px;padding:1rem">
-                  <i class="bi bi-sort-down-alt text-danger d-block mb-1 fs-5"></i>
-                  <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Priority Queue</div>
-                  <div style="font-size:.82rem;color:var(--text-muted)">Donations auto-sorted by quantity and expiry for faster distribution</div>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div style="background:var(--cream);border-radius:10px;padding:1rem">
-                  <i class="bi bi-clock-fill text-success d-block mb-1 fs-5"></i>
-                  <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">48-hr Fast Track</div>
-                  <div style="font-size:.82rem;color:var(--text-muted)">Approval time reduced to 15 minutes (from standard 2 hours)</div>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div style="background:var(--cream);border-radius:10px;padding:1rem">
-                  <i class="bi bi-geo-fill text-primary d-block mb-1 fs-5"></i>
-                  <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Area Targeting</div>
-                  <div style="font-size:.82rem;color:var(--text-muted)">Donations routed specifically to affected zones / camps</div>
-                </div>
-              </div>
+          <div class="col-sm-6">
+            <div class="fb-form-group mb-0">
+              <label>Emergency Type <span style="color:var(--red)">*</span></label>
+              <asp:DropDownList runat="server" ID="ddlEmergencyType" CssClass="fb-input fb-select">
+                <asp:ListItem Value="">Select type...</asp:ListItem>
+                <asp:ListItem Value="Ramadan — High Demand Period">🌙 Ramadan — High Demand Period</asp:ListItem>
+                <asp:ListItem Value="Flood / Natural Disaster">🌊 Flood / Natural Disaster</asp:ListItem>
+                <asp:ListItem Value="IDP Camp / Displaced People">🏕️ IDP Camp / Displaced People</asp:ListItem>
+                <asp:ListItem Value="Fire / Infrastructure Crisis">🔥 Fire / Infrastructure Crisis</asp:ListItem>
+                <asp:ListItem Value="Food Shortage Alert">🫙 Food Shortage Alert</asp:ListItem>
+                <asp:ListItem Value="Other Emergency">⚡ Other Emergency</asp:ListItem>
+              </asp:DropDownList>
             </div>
           </div>
 
-          <!-- Activate Emergency Form -->
-          <div class="fb-card">
-            <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1.2rem"><i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>Activate Emergency Mode</h6>
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <div class="fb-form-group mb-0">
-                  <label>Emergency Type</label>
-                  <select class="fb-input fb-select">
-                    <option value="">Select type...</option>
-                    <option>🌙 Ramadan — High Demand Period</option>
-                    <option>🌊 Flood / Natural Disaster</option>
-                    <option>🏕️ IDP Camp / Displaced People</option>
-                    <option>🔥 Fire / Infrastructure Crisis</option>
-                    <option>🫙 Food Shortage Alert</option>
-                    <option>⚡ Other Emergency</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div class="fb-form-group mb-0">
-                  <label>Affected City / Area</label>
-                  <select class="fb-input fb-select">
-                    <option>All Cities</option>
-                    <option>Karachi</option><option>Lahore</option><option>Islamabad</option>
-                    <option>Peshawar</option><option>Quetta</option><option>Multan</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div class="fb-form-group mb-0">
-                  <label>Start Date & Time</label>
-                  <input type="datetime-local" class="fb-input"/>
-                </div>
-              </div>
-              <div class="col-sm-6">
-                <div class="fb-form-group mb-0">
-                  <label>Expected Duration</label>
-                  <select class="fb-input fb-select">
-                    <option>24 Hours</option><option>48 Hours</option><option>1 Week</option>
-                    <option>30 Days (Ramadan)</option><option>Until Manually Disabled</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="fb-form-group mb-0">
-                  <label>Priority Distribution Areas (Specific Locations)</label>
-                  <input type="text" class="fb-input" placeholder="e.g. Malir Camp, Orangi Town, Korangi Industrial Area..."/>
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="fb-form-group mb-0">
-                  <label>Broadcast Message to NGOs & Volunteers</label>
-                  <textarea class="fb-input fb-textarea" style="min-height:90px" placeholder="Emergency notice to send to all registered NGOs and volunteers via email/SMS...">⚠️ EMERGENCY ALERT: FoodBridge has activated Emergency Mode. Please check available donations and respond immediately. Faster approvals are now active. Your urgent response is needed.</textarea>
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="d-flex gap-2 flex-wrap">
-                  <button class="btn-sm-red px-4 py-2" onclick="fbToast('🚨 Emergency Mode ACTIVATED! All NGOs notified.','error')" style="border-radius:8px;font-size:.93rem">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Activate Emergency Mode
-                  </button>
-                  <button class="btn-sm-outline px-4 py-2" style="border-radius:8px" onclick="fbToast('Preview sent to your email.')">Preview Broadcast</button>
-                </div>
-              </div>
+          <div class="col-sm-6">
+            <div class="fb-form-group mb-0">
+              <label>Affected City / Area</label>
+              <asp:DropDownList runat="server" ID="ddlCity" CssClass="fb-input fb-select"
+                                AutoPostBack="true" OnSelectedIndexChanged="Audience_Changed">
+                <asp:ListItem Value="">All Cities</asp:ListItem>
+                <asp:ListItem>Karachi</asp:ListItem><asp:ListItem>Lahore</asp:ListItem><asp:ListItem>Islamabad</asp:ListItem>
+                <asp:ListItem>Rawalpindi</asp:ListItem><asp:ListItem>Peshawar</asp:ListItem><asp:ListItem>Quetta</asp:ListItem>
+                <asp:ListItem>Multan</asp:ListItem><asp:ListItem>Faisalabad</asp:ListItem>
+              </asp:DropDownList>
             </div>
           </div>
 
-          <!-- Priority Queue -->
-          <div class="fb-card p-0 overflow-hidden">
-            <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);background:#fef2f2;display:flex;justify-content:space-between;align-items:center">
-              <h6 style="font-family:'DM Serif Display',serif;margin:0;color:#dc2626"><i class="bi bi-exclamation-triangle-fill me-2"></i>Priority Donation Queue</h6>
-              <span class="badge-status" style="background:#fee2e2;color:#dc2626">High Priority</span>
-            </div>
-            <div class="table-responsive">
-              <table class="fb-table">
-                <thead><tr><th class="ps-3">Priority</th><th>Donor</th><th>Food</th><th>Qty</th><th>Expires In</th><th>Action</th></tr></thead>
-                <tbody>
-                  <tr>
-                    <td class="ps-3"><span style="background:#fee2e2;color:#dc2626;border-radius:50px;padding:.2rem .7rem;font-size:.75rem;font-weight:700">🔴 URGENT</span></td>
-                    <td><strong>Park View Hall</strong></td><td>Mixed Cuisines</td><td>500 plates</td>
-                    <td><strong style="color:#dc2626">48 mins</strong></td>
-                    <td><button class="btn-sm-green" onclick="fbToast('Auto-assigned to nearest NGO!')">Auto-Assign</button></td>
-                  </tr>
-                  <tr>
-                    <td class="ps-3"><span style="background:#fff3e0;color:var(--amber);border-radius:50px;padding:.2rem .7rem;font-size:.75rem;font-weight:700">🟡 HIGH</span></td>
-                    <td><strong>Marriott Hotel</strong></td><td>Continental</td><td>150 plates</td>
-                    <td><strong style="color:var(--amber)">2h 15m</strong></td>
-                    <td><button class="btn-sm-green" onclick="fbToast('Assigned!')">Auto-Assign</button></td>
-                  </tr>
-                  <tr>
-                    <td class="ps-3"><span style="background:#e8f5ee;color:var(--green);border-radius:50px;padding:.2rem .7rem;font-size:.75rem;font-weight:700">🟢 NORMAL</span></td>
-                    <td><strong>Ali's Restaurant</strong></td><td>Biryani</td><td>30 plates</td>
-                    <td><strong style="color:var(--green)">5h 00m</strong></td>
-                    <td><button class="btn-sm-outline" onclick="fbToast('Assigned!')">Assign</button></td>
-                  </tr>
-                </tbody>
-              </table>
+          <div class="col-sm-6">
+            <div class="fb-form-group mb-0">
+              <label>Start Date &amp; Time <span style="color:var(--red)">*</span></label>
+              <asp:TextBox runat="server" ID="txtStartAt" CssClass="fb-input" TextMode="DateTimeLocal" />
             </div>
           </div>
 
-        </div>
-
-        <!-- Right Column -->
-        <div class="col-lg-4 d-flex flex-column gap-4">
-
-          <!-- Ramadan Mode -->
-          <div class="ramadan-banner">
-            <div style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:.5rem">🌙 Ramadan Mode</div>
-            <p style="font-size:.85rem;opacity:.8;line-height:1.7;margin-bottom:1rem">Specially configured for Ramadan — prioritizes Iftar and Sehri food donations with extended distribution hours.</p>
-            <div class="d-flex flex-column gap-2 mb-3" style="font-size:.82rem;opacity:.75">
-              <div><i class="bi bi-check2 me-1"></i>Iftar time window: 5:30 PM – 9:00 PM</div>
-              <div><i class="bi bi-check2 me-1"></i>Sehri window: 2:00 AM – 5:00 AM</div>
-              <div><i class="bi bi-check2 me-1"></i>Auto-prioritize dates, fruits, drinks</div>
-              <div><i class="bi bi-check2 me-1"></i>30-day active period preset</div>
-            </div>
-            <button class="btn-white px-4" onclick="fbToast('🌙 Ramadan Mode activated for 30 days!')">Activate Ramadan Mode</button>
-          </div>
-
-          <!-- Emergency History -->
-          <div class="fb-card">
-            <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem">Emergency History</h6>
-            <div class="timeline">
-              <div class="tl-item">
-                <div class="tl-dot" style="background:#dc2626"></div>
-                <div class="tl-time">Apr 10 – Apr 11, 2025</div>
-                <div class="tl-text"><strong>Flood Alert – Karachi</strong><br><small style="color:var(--text-muted)">1,200 meals distributed in 24hrs</small></div>
-              </div>
-              <div class="tl-item">
-                <div class="tl-dot" style="background:#f59e0b"></div>
-                <div class="tl-time">Mar 1 – Mar 30, 2025</div>
-                <div class="tl-text"><strong>Ramadan Mode</strong><br><small style="color:var(--text-muted)">8,400 Iftar/Sehri meals served</small></div>
-              </div>
-              <div class="tl-item">
-                <div class="tl-dot" style="background:#dc2626"></div>
-                <div class="tl-time">Feb 5, 2025</div>
-                <div class="tl-text"><strong>IDP Camp – Quetta</strong><br><small style="color:var(--text-muted)">680 meals emergency distribution</small></div>
-              </div>
+          <div class="col-sm-6">
+            <div class="fb-form-group mb-0">
+              <label>Expected Duration</label>
+              <asp:DropDownList runat="server" ID="ddlDuration" CssClass="fb-input fb-select">
+                <asp:ListItem>24 Hours</asp:ListItem><asp:ListItem>48 Hours</asp:ListItem>
+                <asp:ListItem>1 Week</asp:ListItem><asp:ListItem>30 Days (Ramadan)</asp:ListItem>
+                <asp:ListItem>Until Manually Disabled</asp:ListItem>
+              </asp:DropDownList>
+              <div class="note-inline mt-1">Recorded for reference. Nothing expires automatically — there is no scheduler, so you end an emergency with the Deactivate button.</div>
             </div>
           </div>
 
-          <!-- Quick Broadcast -->
-          <div class="fb-card">
-            <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem"><i class="bi bi-megaphone-fill me-2 text-danger"></i>Quick Broadcast</h6>
-            <div class="fb-form-group">
-              <label>Send to</label>
-              <select class="fb-input fb-select">
-                <option>All NGOs + Volunteers</option>
-                <option>NGOs Only</option>
-                <option>Volunteers Only</option>
-                <option>Donors Only</option>
-              </select>
+          <div class="col-12">
+            <div class="fb-form-group mb-0">
+              <label>Priority Distribution Areas (Specific Locations)</label>
+              <asp:TextBox runat="server" ID="txtPriorityAreas" CssClass="fb-input" MaxLength="1000"
+                           placeholder="e.g. Malir Camp, Orangi Town, Korangi Industrial Area..." />
+              <div class="note-inline mt-1">Included in the broadcast text so recipients can read it. Not used for filtering.</div>
             </div>
-            <div class="fb-form-group mb-3">
-              <label>Message</label>
-              <textarea class="fb-input fb-textarea" style="min-height:80px" placeholder="Type broadcast message..."></textarea>
+          </div>
+
+          <div class="col-12">
+            <div class="fb-form-group mb-0">
+              <label>Who to notify</label>
+              <asp:DropDownList runat="server" ID="ddlAudience" CssClass="fb-input fb-select"
+                                AutoPostBack="true" OnSelectedIndexChanged="Audience_Changed">
+                <asp:ListItem Value="Both">All NGOs + Volunteers</asp:ListItem>
+                <asp:ListItem Value="NGOs">NGOs Only</asp:ListItem>
+                <asp:ListItem Value="Volunteers">Volunteers Only</asp:ListItem>
+                <asp:ListItem Value="All">Everyone (incl. Donors)</asp:ListItem>
+              </asp:DropDownList>
             </div>
-            <div class="d-flex gap-2">
-              <button class="btn-sm-red w-100" onclick="fbToast('📢 Broadcast sent to all NGOs & Volunteers!')">Send Broadcast</button>
+          </div>
+
+          <div class="col-12">
+            <asp:Panel runat="server" ID="pnlUnknownCity" Visible="false"
+                       style="background:var(--cream);border-radius:10px;padding:.8rem 1rem">
+              <asp:CheckBox runat="server" ID="chkIncludeUnknownCity" Checked="true"
+                            AutoPostBack="true" OnCheckedChanged="Audience_Changed"
+                            Text="&nbsp;Also notify users with no city on record" />
+              <div class="note-inline mt-1"><asp:Literal runat="server" ID="litUnknownCityNote" /></div>
+            </asp:Panel>
+          </div>
+
+          <div class="col-12">
+            <div class="fb-form-group mb-0">
+              <label>Broadcast Message <span style="color:var(--red)">*</span></label>
+              <asp:TextBox runat="server" ID="txtMessage" TextMode="MultiLine" CssClass="fb-input fb-textarea"
+                           style="min-height:90px" MaxLength="1000" />
             </div>
+          </div>
+
+          <div class="col-12">
+            <div style="background:var(--cream);border-radius:10px;padding:.9rem 1.1rem">
+              <div style="font-size:.88rem"><i class="bi bi-people-fill me-2"></i><asp:Literal runat="server" ID="litRecipientCount" /></div>
+              <asp:Literal runat="server" ID="litSmtpWarning" />
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="d-flex gap-2 flex-wrap">
+              <asp:LinkButton runat="server" ID="btnActivate" CssClass="btn-sm-red px-4 py-2"
+                              style="border-radius:8px;font-size:.93rem"
+                              OnClick="btnActivate_Click"
+                              OnClientClick="return confirm('Activate emergency mode and send this broadcast now?');">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>Activate &amp; Broadcast
+              </asp:LinkButton>
+              <asp:LinkButton runat="server" ID="btnPreview" CssClass="btn-sm-outline px-4 py-2"
+                              style="border-radius:8px" OnClick="btnPreview_Click">Preview Broadcast</asp:LinkButton>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <asp:Panel runat="server" ID="pnlPreview" Visible="false"
+                       style="border:1.5px dashed var(--sand-dark);border-radius:10px;padding:1rem 1.2rem">
+              <div class="note-inline mb-2"><i class="bi bi-eye me-1"></i>This is exactly what recipients will see — rendered through the same template the app really sends.</div>
+              <asp:Literal runat="server" ID="litPreview" />
+            </asp:Panel>
           </div>
 
         </div>
       </div>
 
-</asp:Content>
+      <!-- Priority queue -->
+      <div class="fb-card p-0 overflow-hidden">
+        <div style="padding:1rem 1.2rem;border-bottom:1.5px solid var(--sand);background:#fef2f2;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+          <h6 style="font-family:'DM Serif Display',serif;margin:0;color:#dc2626"><i class="bi bi-exclamation-triangle-fill me-2"></i>Priority Donation Queue</h6>
+          <span class="note-inline">In-flight donations, flagged ones first, then soonest to expire</span>
+        </div>
+        <div class="table-responsive">
+          <table class="fb-table">
+            <thead><tr><th class="ps-3">Priority</th><th>Donor</th><th>Food</th><th>Qty</th><th>Expires In</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <asp:Repeater runat="server" ID="rptPriority" OnItemCommand="rptPriority_ItemCommand">
+                <ItemTemplate>
+                  <tr class='prio-row <%# Convert.ToBoolean(Eval("IsPriority")) ? "is-priority" : "" %>'>
+                    <td class="ps-3"><%# PriorityBadge(Eval("IsPriority"), Eval("ExpiryTime")) %></td>
+                    <td><strong><%# Server.HtmlEncode(Convert.ToString(Eval("DonorName"))) %></strong><div class="note-inline"><%# Server.HtmlEncode(Convert.ToString(Eval("City"))) %></div></td>
+                    <td><%# Server.HtmlEncode(Truncate(Eval("FoodDescription"), 34)) %></td>
+                    <td><%# Server.HtmlEncode(Convert.ToString(Eval("Quantity"))) %></td>
+                    <td><%# ExpiresIn(Eval("ExpiryTime")) %></td>
+                    <td><span class="badge-status <%# StatusBadgeClass(Eval("Status")) %>"><%# Eval("Status") %></span></td>
+                    <td>
+                      <asp:LinkButton runat="server" CommandName="TogglePriority"
+                                      CommandArgument='<%# Eval("DonationID") %>'
+                                      CssClass='<%# Convert.ToBoolean(Eval("IsPriority")) ? "btn-sm-outline" : "btn-sm-red" %>'>
+                        <%# Convert.ToBoolean(Eval("IsPriority")) ? "Unflag" : "Flag" %>
+                      </asp:LinkButton>
+                    </td>
+                  </tr>
+                </ItemTemplate>
+              </asp:Repeater>
+            </tbody>
+          </table>
+        </div>
+        <asp:Panel runat="server" ID="pnlNoPriority" Visible="false" CssClass="empty-state" style="padding:2.5rem 1rem">
+          <i class="bi bi-inbox"></i>
+          <p>No donations are in flight right now. Posted, approved, requested and assigned donations appear here.</p>
+        </asp:Panel>
+      </div>
 
-<asp:Content ID="Content4" ContentPlaceHolderID="AdminFooterScripts" runat="server">
-  <script>
-  let emergencyActive = false;
-  function toggleEmergency() {
-    emergencyActive = !emergencyActive;
-    const banner = document.getElementById('emergencyBanner');
-    const toggle = document.getElementById('emergencyToggle');
-    const statusText = document.getElementById('statusText');
-    const statusDesc = document.getElementById('statusDesc');
-    if (emergencyActive) {
-      banner.classList.remove('inactive');
-      toggle.classList.add('on');
-      statusText.textContent = 'ACTIVE';
-      statusDesc.textContent = 'Emergency Mode is ON. Priority distribution is active. All NGOs have been notified.';
-      fbToast('🚨 Emergency Mode ACTIVATED!', 'error');
-    } else {
-      banner.classList.add('inactive');
-      toggle.classList.remove('on');
-      statusText.textContent = 'INACTIVE';
-      statusDesc.textContent = 'System is running normally. Enable Emergency Mode for priority-based distribution.';
-      fbToast('Emergency Mode deactivated. System returning to normal.');
-    }
-  }
-  </script>
+    </div>
+
+    <!-- ===================== Right column ===================== -->
+    <div class="col-lg-4 d-flex flex-column gap-4">
+
+      <!-- Ramadan preset -->
+      <div class="ramadan-banner">
+        <div style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:.5rem">🌙 Ramadan Preset</div>
+        <p style="font-size:.85rem;opacity:.8;line-height:1.7;margin-bottom:1rem">
+          Fills the activation form with a 30-day Ramadan emergency and a suggested message. You still review and send it yourself.
+        </p>
+        <div style="font-size:.78rem;opacity:.6;line-height:1.6;margin-bottom:1rem">
+          Iftar/Sehri time windows and auto-prioritising dates and drinks aren't implemented — scheduling by time of day needs a background scheduler this app doesn't have.
+        </div>
+        <asp:LinkButton runat="server" ID="btnRamadanPreset" CssClass="btn-white px-4"
+                        OnClick="btnRamadanPreset_Click">Use Ramadan Preset</asp:LinkButton>
+      </div>
+
+      <!-- History -->
+      <div class="fb-card">
+        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem">Emergency History</h6>
+        <asp:Repeater runat="server" ID="rptHistory">
+          <ItemTemplate>
+            <div class='hist-item <%# Convert.ToBoolean(Eval("IsActive")) ? "active" : "" %>'>
+              <div class="note-inline"><%# DateRange(Eval("StartDateTime"), Eval("EndedAt"), Eval("IsActive")) %></div>
+              <div style="font-size:.9rem;font-weight:600;margin:.15rem 0">
+                <%# Server.HtmlEncode(Convert.ToString(Eval("EmergencyType"))) %>
+                <%# AreaSuffix(Eval("AffectedArea")) %>
+                <%# Convert.ToBoolean(Eval("IsActive")) ? "<span class=\"badge-status badge-rejected ms-1\">Active</span>" : "" %>
+              </div>
+              <div class="note-inline">
+                <%# RecipientText(Eval("RecipientCount")) %> · <%# Server.HtmlEncode(Convert.ToString(Eval("SendTo"))) %> · by <%# Server.HtmlEncode(Convert.ToString(Eval("CreatedByName"))) %>
+              </div>
+            </div>
+          </ItemTemplate>
+        </asp:Repeater>
+        <asp:Panel runat="server" ID="pnlNoHistory" Visible="false" CssClass="note-inline">
+          No emergencies have been declared yet.
+        </asp:Panel>
+      </div>
+
+      <!-- Quick broadcast -->
+      <div class="fb-card">
+        <h6 style="font-family:'DM Serif Display',serif;margin-bottom:1rem"><i class="bi bi-megaphone-fill me-2 text-danger"></i>Quick Broadcast</h6>
+        <div class="note-inline mb-2">Sends a message without declaring an emergency. Still recorded in history.</div>
+        <div class="fb-form-group">
+          <label>Send to</label>
+          <asp:DropDownList runat="server" ID="ddlQuickAudience" CssClass="fb-input fb-select">
+            <asp:ListItem Value="Both">All NGOs + Volunteers</asp:ListItem>
+            <asp:ListItem Value="NGOs">NGOs Only</asp:ListItem>
+            <asp:ListItem Value="Volunteers">Volunteers Only</asp:ListItem>
+            <asp:ListItem Value="Donors">Donors Only</asp:ListItem>
+          </asp:DropDownList>
+        </div>
+        <div class="fb-form-group mb-3">
+          <label>Message</label>
+          <asp:TextBox runat="server" ID="txtQuickMessage" TextMode="MultiLine" CssClass="fb-input fb-textarea"
+                       style="min-height:80px" MaxLength="1000" placeholder="Type broadcast message..." />
+        </div>
+        <asp:LinkButton runat="server" ID="btnQuickSend" CssClass="btn-sm-red w-100 d-block text-center py-2"
+                        style="border-radius:8px" OnClick="btnQuickSend_Click"
+                        OnClientClick="return confirm('Send this broadcast now?');">Send Broadcast</asp:LinkButton>
+      </div>
+
+    </div>
+  </div>
+
 </asp:Content>

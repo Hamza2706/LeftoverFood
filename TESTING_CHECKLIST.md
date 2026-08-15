@@ -169,7 +169,14 @@ Everything implemented so far, in the order it was built. Test top to bottom —
 
 ## Summary of what's still a static mockup (expected, not a bug)
 
-- Admin: "Recent Donations (All)" table on the dashboard, System Health bars, Quick Actions buttons, `volunteer-assign.aspx`, `emergency-mode.aspx`, `fraud-detection.aspx`, `reports.aspx` (all wired for RBAC/logout, but their data is still hardcoded — later phases).
-- NGO: "Active Deliveries," "Our Volunteers," "Monthly Distribution Summary" on the dashboard; the whole of `ngo-active-requests.aspx`.
-- Donor: "Your Impact," "Recent Activity" panels; `notifications.aspx`, `profile.aspx`, `ratings.aspx` (RBAC/logout work, data is mockup).
-- Volunteer: the entire `volunteer-dashboard.aspx` is still a mockup — Volunteer role has had no feature work yet, only Phase 0's RBAC/logout treatment.
+> **This list was written after Phase 2 and is almost entirely out of date.** Phases 3, 4, 5, 6a–6d and 7 have all landed since, and every page named below except the two items in the "still mockup" list has been built against real data. `IMPLEMENTATION_ROADMAP.md` §4 is authoritative.
+
+Still mockup today (after Phase 8 rebuilt all three role dashboards against real data):
+
+- **No fabricated data remains on any page.** Phase 8 replaced the last nine blocks — admin's Recent Donations / System Health / Quick Actions, NGO's In Transit / Meals Served / Active Deliveries / Our Volunteers / Monthly Summary, and donor's Your Impact / Recent Activity.
+- **Unwired controls** (present but do nothing): on `login.aspx`, "Forgot Password?", the Google and Facebook buttons, and the Terms/Privacy links. *(The topbar search box was wired in Phase 9 — it now posts to a role-scoped `~/Search.aspx`.)*
+- **7 sidebar nav items still pointing at `#`** — Admin "Donors"/"NGOs"/"Volunteers"/"Settings", Donor "My Certificates", NGO "History", Volunteer "Messages". These link to screens that were never built, which is a different thing from faking data on a screen that exists.
+
+  Of the original sixteen: **six were repointed** to `#fragment` anchors on the relevant role dashboard (All Donations, All Users, My Donations, Our Volunteers, My Tasks, Completed), where each section now exists with real data; and **three were deleted** as dead by design — NGO "Reports" (the only reports page is Admin-only and would bounce an NGO to `Unauthorized.aspx`), Volunteer "Nearby Pickups" (assignment is admin-driven, so a volunteer cannot claim one) and Volunteer "My Points" (no points system exists).
+
+Built since this list was written: `volunteer-assign.aspx`, `emergency-mode.aspx`, `fraud-detection.aspx`, `reports.aspx` (Admin); `ngo-active-requests.aspx` and the NGO dashboard panels; `notifications.aspx` plus the shared `~/Notifications.aspx`; the shared `~/Ratings.aspx` (replacing `Donor/ratings.aspx`); the shared `~/Profile.aspx` (replacing `Donor/profile.aspx`); Donor "Your Impact"/"Recent Activity"; and the whole of `volunteer-dashboard.aspx`.

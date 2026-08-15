@@ -15,9 +15,13 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg fb-navbar">
   <div class="container">
-    <a class="navbar-brand" href="index.html"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></a>
+    <%-- Both links were left over from the standalone mockup and 404'd: they
+         resolved relative to /Donor/, where neither index.html nor
+         donor-dashboard.html exists. A signed-in donor's home is their
+         dashboard, not the static index.html prototype at the app root. --%>
+    <a class="navbar-brand" href="<%= ResolveUrl("~/Donor/donor-dashboard.aspx") %>"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></a>
     <div class="ms-auto d-flex gap-2 align-items-center">
-      <a href="donor-dashboard.html" class="nav-link btn-nav-login"><i class="bi bi-grid me-1"></i>Dashboard</a>
+      <a href="<%= ResolveUrl("~/Donor/donor-dashboard.aspx") %>" class="nav-link btn-nav-login"><i class="bi bi-grid me-1"></i>Dashboard</a>
     </div>
   </div>
 </nav>
@@ -276,7 +280,16 @@
               <div style="font-size:.8rem;opacity:.8;line-height:1.6">Accurate quantity and type helps NGOs plan distribution effectively for communities.</div>
             </div>
           </div>
-          <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.2);font-size:.8rem;opacity:.7;text-align:center">Need help? <a href="about.html#contact" style="color:var(--green-light)">Contact our team</a></div>
+          <%-- Was "Need help? Contact our team" linking to about.html#contact,
+               which does not exist. There is no contact page, no support inbox
+               and no messaging feature in this app, so the link is gone rather
+               than repointed — the same call Phases 6a and 6b made for promises
+               with nothing behind them. What a donor can genuinely do after
+               posting is track it, so that is what this offers instead. --%>
+          <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.2);font-size:.8rem;opacity:.7;text-align:center">
+            Once posted, follow your donation from
+            <a href="<%= ResolveUrl("~/Donor/donor-dashboard.aspx") %>" style="color:var(--green-light)">your dashboard</a>.
+          </div>
         </div>
       </div>
 

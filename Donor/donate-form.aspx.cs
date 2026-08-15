@@ -92,13 +92,24 @@ namespace LeftoverFood.Donor
             string insertQuery = @"
                 INSERT INTO FoodDonations
                     (DonorID, FoodDescription, Category, DonorTypeAtPost, Quantity, Servings, PreparedOn, ExpiryTime,
-                     DietaryInfo, AdditionalNotes, PickupAddress, City, AvailableFrom, AvailableUntil,
+                     DietaryInfo, AdditionalNotes, PickupAddress, City, Latitude, Longitude, GeoPrecision, AvailableFrom, AvailableUntil,
                      ContactPerson, ContactPhone, PackagingCondition, PreferredNGOID, PhotoPath, Status, CreatedAt)
                 VALUES
                     (@DonorID, @FoodDescription, @Category, @DonorType, @Quantity, @Servings, @PreparedOn, @ExpiryTime,
-                     @DietaryInfo, @Notes, @PickupAddress, @City, @AvailableFrom, @AvailableUntil,
+                     @DietaryInfo, @Notes, @PickupAddress, @City, @Latitude, @Longitude, @GeoPrecision, @AvailableFrom, @AvailableUntil,
                      @ContactPerson, @ContactPhone, @Packaging, @PreferredNGOID, @PhotoPath, 'Posted', GETDATE());
                 SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+            // Phase 5: resolve the pickup address to coordinates so the
+            // donation can appear on the tracking and NGO maps.
+            //
+            // Address + city + country gives Nominatim far more to work with
+            // than the street line alone — plenty of real Karachi addresses
+            // still return no match, and that is fine: coordinates stay NULL,
+            // the donation posts normally, and every map falls back to showing
+            // the address as text.
+            GeoPoint pickupPoint = GeocodingService.GeocodeDonation(
+                txtPickupAddress.Text.Trim(), ddlCity.SelectedValue);
 
             SqlParameter[] parameters = {
                 new SqlParameter("@DonorID", SessionHelper.GetUserID()),
@@ -113,6 +124,9 @@ namespace LeftoverFood.Donor
                 new SqlParameter("@Notes", string.IsNullOrWhiteSpace(txtNotes.Text) ? (object)DBNull.Value : txtNotes.Text.Trim()),
                 new SqlParameter("@PickupAddress", txtPickupAddress.Text.Trim()),
                 new SqlParameter("@City", ddlCity.SelectedValue),
+                new SqlParameter("@Latitude", pickupPoint == null ? (object)DBNull.Value : pickupPoint.Latitude),
+                new SqlParameter("@Longitude", pickupPoint == null ? (object)DBNull.Value : pickupPoint.Longitude),
+                new SqlParameter("@GeoPrecision", pickupPoint == null ? (object)DBNull.Value : pickupPoint.Precision),
                 new SqlParameter("@AvailableFrom", availableFrom),
                 new SqlParameter("@AvailableUntil", availableUntil),
                 new SqlParameter("@ContactPerson", txtContactPerson.Text.Trim()),
@@ -130,6 +144,14 @@ namespace LeftoverFood.Donor
                 int donationId = newId == null || newId == DBNull.Value ? 0 : Convert.ToInt32(newId);
 
                 string food = txtFoodDescription.Text.Trim();
+
+                // Phase 6b: rule checks run inline here because this app has no
+                // background job host. Fail-soft by contract — a detection
+                // fault cannot stop a donation that has already been inserted,
+                // and nothing it finds blocks the donor. Anything raised goes
+                // to the admin review queue only.
+                if (donationId > 0)
+                    FraudDetectionService.CheckNewDonation(donationId, SessionHelper.GetUserID());
 
                 // Confirmation to the donor...
                 NotificationService.Notify(SessionHelper.GetUserID(),

@@ -47,7 +47,10 @@ namespace LeftoverFood.Admin
                   FROM FoodDonations d
                   JOIN Users u ON u.UserID = d.DonorID
                   WHERE d.Status = 'Posted'
-                  ORDER BY d.ExpiryTime ASC");
+                  -- Phase 6a: admin-flagged priority donations sort above the
+                  -- expiry ordering. Without this the flag set on the emergency
+                  -- page would change nothing anywhere.
+                  ORDER BY d.IsPriority DESC, d.ExpiryTime ASC");
 
             rptPending.DataSource = dt;
             rptPending.DataBind();

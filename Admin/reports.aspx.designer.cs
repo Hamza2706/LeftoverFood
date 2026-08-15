@@ -9,9 +9,166 @@
 
 namespace LeftoverFood.Admin
 {
-
-
     public partial class reports
     {
+        /// <summary>
+        /// litPeriodLabel control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litPeriodLabel;
+
+        /// <summary>
+        /// ddlPeriod control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlPeriod;
+
+        /// <summary>
+        /// pnlEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlEmpty;
+
+        /// <summary>
+        /// litEmpty control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litEmpty;
+
+        /// <summary>
+        /// litDonationsChange control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litDonationsChange;
+
+        /// <summary>
+        /// litTotalDonations control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litTotalDonations;
+
+        /// <summary>
+        /// litMealsChange control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litMealsChange;
+
+        /// <summary>
+        /// litMealsDistributed control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litMealsDistributed;
+
+        /// <summary>
+        /// litFulfilment control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litFulfilment;
+
+        /// <summary>
+        /// litExpired control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litExpired;
+
+        /// <summary>
+        /// litChartYear control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litChartYear;
+
+        /// <summary>
+        /// rptMonthly control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptMonthly;
+
+        /// <summary>
+        /// rptStatusBreakdown control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptStatusBreakdown;
+
+        /// <summary>
+        /// rptDonut control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptDonut;
+
+        /// <summary>
+        /// litDonutTotal control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litDonutTotal;
+
+        /// <summary>
+        /// rptCategoryLegend control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptCategoryLegend;
+
+        /// <summary>
+        /// pnlNoCategory control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoCategory;
+
+        /// <summary>
+        /// rptTopDonors control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptTopDonors;
+
+        /// <summary>
+        /// pnlNoDonors control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoDonors;
+
+        /// <summary>
+        /// rptTopNgos control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptTopNgos;
+
+        /// <summary>
+        /// pnlNoNgos control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoNgos;
+
+        /// <summary>
+        /// litOnTimePct control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litOnTimePct;
+
+        /// <summary>
+        /// barOnTime control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl barOnTime;
+
+        /// <summary>
+        /// litExpiredPct control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litExpiredPct;
+
+        /// <summary>
+        /// barExpired control.
+        /// </summary>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl barExpired;
+
+        /// <summary>
+        /// litAvgPickup control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litAvgPickup;
+
+        /// <summary>
+        /// litWasteNote control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Literal litWasteNote;
+
+        /// <summary>
+        /// rptCities control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptCities;
+
+        /// <summary>
+        /// pnlNoCities control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlNoCities;
+
+        /// <summary>
+        /// btnExportDonors control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnExportDonors;
+
+        /// <summary>
+        /// btnExportNgos control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnExportNgos;
+
+        /// <summary>
+        /// btnExportDonations control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.LinkButton btnExportDonations;
     }
 }
