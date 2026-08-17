@@ -749,11 +749,59 @@ namespace LeftoverFoodSystem
             if (appRelative.StartsWith("http://") || appRelative.StartsWith("https://"))
                 return appRelative;
 
-            string baseUrl = AppSetting("App.BaseUrl", "");
+            string baseUrl = CurrentBaseUrl();
             if (string.IsNullOrWhiteSpace(baseUrl)) return appRelative;
             if (!baseUrl.EndsWith("/")) baseUrl += "/";
 
             return baseUrl + appRelative.TrimStart('~', '/');
+        }
+
+        /// <summary>
+        /// Where the site is actually being served from right now.
+        ///
+        /// The live request is preferred over the App.BaseUrl setting because
+        /// the setting goes stale the moment the site moves — and a stale value
+        /// is silent: every link in every notification email points at whatever
+        /// it still says (e.g. someone's localhost) and 404s for the recipient,
+        /// while the app itself looks perfectly healthy. A request cannot be
+        /// wrong about its own address.
+        ///
+        /// App.BaseUrl stays as the fallback for notifications raised without a
+        /// request context, such as from a background thread.
+        /// </summary>
+        private static string CurrentBaseUrl()
+        {
+            try
+            {
+                HttpContext ctx = HttpContext.Current;
+                if (ctx != null && ctx.Request != null)
+                {
+                    HttpRequest req = ctx.Request;
+
+                    // Behind a proxy the scheme IIS sees is http even when the
+                    // browser is on https. Taking the forwarded header first
+                    // stops email links from pointing at http, which would cost
+                    // the recipient a redirect on every click.
+                    string scheme = req.Headers["X-Forwarded-Proto"];
+                    if (string.IsNullOrWhiteSpace(scheme))
+                        scheme = req.IsSecureConnection ? "https" : "http";
+
+                    // "/" when the app is at the site root, "/sub" when it is in
+                    // a virtual directory — dropping it would break the latter.
+                    string appPath = req.ApplicationPath;
+                    if (string.IsNullOrEmpty(appPath)) appPath = "/";
+                    if (!appPath.EndsWith("/")) appPath += "/";
+
+                    return scheme.Trim() + "://" + req.Url.Authority + appPath;
+                }
+            }
+            catch
+            {
+                // Fall through to the configured value — this is a best-effort
+                // convenience and must never break sending a notification.
+            }
+
+            return AppSetting("App.BaseUrl", "");
         }
 
         private static string Truncate(string s, int max)

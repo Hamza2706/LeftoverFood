@@ -312,7 +312,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="foodbridge.runasp.net-WebDeploy.publishSettings" />
     <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\site85771-WebDeploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

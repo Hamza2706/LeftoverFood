@@ -195,7 +195,17 @@ namespace LeftoverFood.Donor
 
             string fileName = Guid.NewGuid().ToString("N") + ext;
             string relativePath = "~/uploads/images/" + fileName;
-            fuPhoto.SaveAs(Server.MapPath(relativePath));
+            string fullPath = Server.MapPath(relativePath);
+
+            // SaveAs does not create missing directories — it throws. A publish
+            // that skips uploads/images (it only exists in source control
+            // because two sample photos happen to live in it) would otherwise
+            // take down every donation submitted with a photo, on a host where
+            // the folder is not there to look at.
+            string dir = Path.GetDirectoryName(fullPath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+            fuPhoto.SaveAs(fullPath);
             return "/uploads/images/" + fileName;
         }
 
