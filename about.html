@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>About – FoodBridge</title>
+  <meta name="description" content="What FoodBridge is, the problem it addresses, how it is built, and how to get in touch."/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="assets/css/style.css" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg fb-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="index.html"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="index.html#how">How It Works</a></li>
+        <li class="nav-item"><a class="nav-link" href="index.html#features">Features</a></li>
+        <li class="nav-item"><a class="nav-link" href="index.html#roles">Who We Serve</a></li>
+        <li class="nav-item"><a class="nav-link active" href="about.html">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html#contact">Contact</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <a href="login.aspx" class="nav-link btn-nav-login">Login</a>
+        <a href="Donor/donate-form.aspx" class="nav-link btn-nav-donate">Donate Food</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero-section" style="padding-bottom:48px">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="hero-badge"><i class="bi bi-info-circle-fill me-1"></i>About the Project</div>
+        <h1>Food Is Wasted While<br><em>People Go Hungry</em></h1>
+        <p class="lead mb-0">FoodBridge exists to close that gap — a single place where surplus food is offered, claimed, collected and accounted for, before it spoils.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PROBLEM -->
+<section style="padding:72px 0;background:var(--white)">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-6">
+        <span class="section-tag">The Problem</span>
+        <h2 class="section-title">Surplus and shortage, in the same city</h2>
+        <p class="text-muted" style="font-size:.95rem;line-height:1.8">
+          Restaurants, wedding halls, hotels and households routinely end the day with good food they cannot use.
+          Charities in the same neighbourhoods are looking for exactly that food. What is usually missing is not
+          generosity — it is coordination.
+        </p>
+        <p class="text-muted" style="font-size:.95rem;line-height:1.8">
+          Without a shared system, a donor has to know which NGO to ring, whether anyone can collect in time, and
+          whether the food will still be safe when it arrives. Most of the time that is too much friction, and the
+          food is binned instead.
+        </p>
+      </div>
+      <div class="col-lg-6">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="fb-card h-100">
+              <div class="role-icon mb-2" style="background:#fee2e2;color:var(--red)"><i class="bi bi-trash3-fill"></i></div>
+              <h6>Food spoils fast</h6>
+              <p class="text-muted mb-0" style="font-size:.85rem">Cooked surplus has hours, not days. Every donation carries an expiry time and the platform sorts the most urgent first.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fb-card h-100">
+              <div class="role-icon mb-2" style="background:var(--amber-light);color:var(--amber)"><i class="bi bi-telephone-x-fill"></i></div>
+              <h6>No shared channel</h6>
+              <p class="text-muted mb-0" style="font-size:.85rem">Donors and charities rely on personal contacts. One listing here is visible to every verified NGO at once.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fb-card h-100">
+              <div class="role-icon mb-2" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-question-circle-fill"></i></div>
+              <h6>No accountability</h6>
+              <p class="text-muted mb-0" style="font-size:.85rem">Once food leaves, the donor rarely learns what happened. Here every stage is timestamped and visible to them.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fb-card h-100">
+              <div class="role-icon mb-2" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-people-fill"></i></div>
+              <h6>No one to collect</h6>
+              <p class="text-muted mb-0" style="font-size:.85rem">Many charities have no spare driver. Volunteers are assigned to each pickup and tracked to the drop-off.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW WE ANSWER IT -->
+<section style="padding:72px 0">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="section-tag">Our Approach</span>
+      <h2 class="section-title">Coordination, and a record of it</h2>
+      <p class="section-sub mx-auto text-center">Four principles the platform is built around.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="step-card h-100">
+          <div class="step-icon"><i class="bi bi-patch-check-fill"></i></div>
+          <h5>Verified participants</h5>
+          <p class="text-muted" style="font-size:.9rem">Every account — donor, NGO or volunteer — is reviewed by an administrator before it can sign in or list anything.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="step-card h-100">
+          <div class="step-icon"><i class="bi bi-hourglass-split"></i></div>
+          <h5>Urgency first</h5>
+          <p class="text-muted" style="font-size:.9rem">Listings carry an expiry time, queues sort by it, and admins can flag a donation as priority when it matters more than the sort suggests.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="step-card h-100">
+          <div class="step-icon"><i class="bi bi-eye-fill"></i></div>
+          <h5>Visible end to end</h5>
+          <p class="text-muted" style="font-size:.9rem">Donors follow their food through five tracked stages with real timestamps, a map, and a notification at each step.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="step-card h-100">
+          <div class="step-icon"><i class="bi bi-shield-check"></i></div>
+          <h5>Accountable</h5>
+          <p class="text-muted" style="font-size:.9rem">NGOs record what actually arrived, participants rate each other, and automated checks raise anything odd for an admin to look at.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNOLOGY -->
+<section id="tech" style="padding:72px 0;background:var(--white)">
+  <div class="container">
+    <div class="row g-5 align-items-start">
+      <div class="col-lg-5">
+        <span class="section-tag">Technology</span>
+        <h2 class="section-title">How it is built</h2>
+        <p class="text-muted" style="font-size:.95rem;line-height:1.8">
+          A conventional server-rendered web application, chosen so the whole system runs on a single machine with
+          no paid third-party services.
+        </p>
+        <p class="text-muted" style="font-size:.95rem;line-height:1.8">
+          Mapping uses OpenStreetMap and Nominatim rather than a commercial maps provider, so no billing account or
+          API key is required to run it.
+        </p>
+      </div>
+      <div class="col-lg-7">
+        <ul class="feat-list">
+          <li><i class="bi bi-check-circle-fill"></i><strong>ASP.NET Web Forms</strong> on .NET Framework 4.7.2, with C# code-behind</li>
+          <li><i class="bi bi-check-circle-fill"></i><strong>SQL Server</strong> accessed through parameterised ADO.NET — no ORM</li>
+          <li><i class="bi bi-check-circle-fill"></i><strong>Bootstrap 5</strong> with a custom stylesheet shared across every page</li>
+          <li><i class="bi bi-check-circle-fill"></i><strong>Leaflet + OpenStreetMap</strong> for maps, <strong>Nominatim</strong> for geocoding — no API key</li>
+          <li><i class="bi bi-check-circle-fill"></i><strong>PBKDF2</strong> password hashing with a random salt per account</li>
+          <li><i class="bi bi-check-circle-fill"></i><strong>SMTP email</strong> alongside in-app notifications, with per-event preferences</li>
+          <li><i class="bi bi-check-circle-fill"></i><strong>Role-based access control</strong> enforced server-side on every page</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" style="padding:72px 0">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="section-tag">Contact</span>
+      <h2 class="section-title">Get in Touch</h2>
+      <p class="section-sub mx-auto text-center">How to reach the project, and what to expect.</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="fb-card h-100">
+          <div class="role-icon mb-3" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-envelope-fill"></i></div>
+          <h5>Email the project</h5>
+          <p class="text-muted" style="font-size:.9rem">
+            For questions about the platform, partnership enquiries, or anything to do with an account.
+          </p>
+          <a href="mailto:finalyearproject375@gmail.com" class="btn-green d-inline-block mt-2">finalyearproject375@gmail.com</a>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-5">
+        <div class="fb-card h-100">
+          <div class="role-icon mb-3" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-person-badge-fill"></i></div>
+          <h5>Already registered?</h5>
+          <p class="text-muted" style="font-size:.9rem">
+            Sign in and use the notifications area — administrators are notified of account and donation issues
+            directly, and every status change is recorded against your account.
+          </p>
+          <a href="login.aspx" class="btn-outline-green d-inline-block mt-2">Sign In</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="fb-card mt-4">
+      <div class="d-flex flex-wrap gap-3 align-items-start">
+        <i class="bi bi-info-circle-fill" style="color:var(--blue);font-size:1.3rem"></i>
+        <div style="flex:1;min-width:240px">
+          <h6 class="mb-1">A note on what this is</h6>
+          <p class="text-muted mb-0" style="font-size:.88rem;line-height:1.7">
+            FoodBridge is a final-year university project, not a commercial service. There is no call centre and no
+            support desk behind it — email reaches the project directly. Account approvals are performed by a human
+            administrator, so registering does not grant immediate access.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:0 0 80px">
+  <div class="container">
+    <div class="cta-block">
+      <i class="bi bi-basket2-fill fs-1 mb-3 d-block" style="color:var(--green-light)"></i>
+      <h2>Have Food to Share?</h2>
+      <p>Post it in a couple of minutes. An NGO claims it, a volunteer collects it, and you see exactly where it went.</p>
+      <div class="d-flex justify-content-center flex-wrap gap-3">
+        <a href="Donor/donate-form.aspx" class="btn-white">Donate Food Now</a>
+        <a href="index.html#features" style="border:2px solid rgba(255,255,255,.5);color:#fff;border-radius:50px;padding:.65rem 1.8rem;font-weight:600;display:inline-block">See All Features</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="fb-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="brand mb-2"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
+        <p style="font-size:.88rem;line-height:1.7">Reducing food wastage and fighting hunger by connecting donors, NGOs, and volunteers on a single platform.</p>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2"><h6>Platform</h6>
+        <a href="index.html">Home</a>
+        <a href="index.html#how">How It Works</a>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#roles">Who We Serve</a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2"><h6>Get Started</h6>
+        <a href="Donor/donate-form.aspx">Donate Food</a>
+        <a href="login.aspx">Sign In</a>
+        <a href="login.aspx">Register</a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3"><h6>Project</h6>
+        <a href="about.html">About FoodBridge</a>
+        <a href="about.html#contact">Contact</a>
+        <a href="about.html#tech">Technology</a>
+      </div>
+    </div>
+    <hr/><div class="d-flex flex-wrap justify-content-between gap-2"><small>© 2026 FoodBridge — Final Year Project.</small><small>Built with ASP.NET Web Forms &amp; Bootstrap 5</small></div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

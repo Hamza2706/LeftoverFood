@@ -89,6 +89,7 @@
     <Content Include="Donor\track-donation.aspx" />
     <Content Include="Error.aspx" />
     <Content Include="Global.asax" />
+    <Content Include="about.html" />
     <Content Include="index.html" />
     <Content Include="login.aspx" />
     <Content Include="Notifications.aspx" />

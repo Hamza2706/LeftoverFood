@@ -4,9 +4,13 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>FoodBridge – Leftover Food Management System</title>
+  <meta name="description" content="FoodBridge connects food donors, NGOs and volunteers to redistribute surplus food before it is wasted."/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="../assets/css/style.css" rel="stylesheet"/>
+  <!-- This file sits at the application root, so assets are addressed from
+       here — not "../assets/…", which resolved above the root and left the
+       page completely unstyled. -->
+  <link href="assets/css/style.css" rel="stylesheet"/>
 </head>
 <body>
 
@@ -21,14 +25,14 @@
       <ul class="navbar-nav mx-auto gap-1">
         <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="#how">How It Works</a></li>
-        <li class="nav-item"><a class="nav-link" href="donations-list.html">Donations</a></li>
+        <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
         <li class="nav-item"><a class="nav-link" href="#roles">Who We Serve</a></li>
         <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
         <li class="nav-item"><a class="nav-link" href="about.html#contact">Contact</a></li>
       </ul>
       <div class="d-flex align-items-center gap-2">
-        <a href="../login.aspx" class="nav-link btn-nav-login">Login</a>
-        <a href="donate-form.html" class="nav-link btn-nav-donate">Donate Food</a>
+        <a href="login.aspx" class="nav-link btn-nav-login">Login</a>
+        <a href="Donor/donate-form.aspx" class="nav-link btn-nav-donate">Donate Food</a>
       </div>
     </div>
   </div>
@@ -38,45 +42,52 @@
 <section class="hero-section">
   <div class="container">
     <div class="row align-items-center g-5">
-      <div class="col-lg-6" data-aos="fade-right">
+      <div class="col-lg-6">
         <div class="hero-badge"><i class="bi bi-leaf-fill me-1"></i>Fighting Food Waste, One Meal at a Time</div>
         <h1>Connecting <em>Surplus Food</em><br>with People Who Need It</h1>
         <p class="lead">A centralized platform bridging food donors, NGOs, and volunteers to reduce waste and feed underprivileged communities across Pakistan.</p>
         <div class="d-flex flex-wrap gap-3">
-          <a href="donate-form.html" class="btn-green">Donate Leftover Food</a>
-          <a href="login.html" class="btn-outline-green">Join as NGO / Volunteer</a>
+          
+          <a href="login.aspx" class="btn-outline-green">Join as NGO / Volunteer</a>
         </div>
+
+        <!-- The three counters that used to sit here ("12,400+ meals",
+             "340+ donors", "85 NGO partners") were invented, and this is a
+             static file that cannot query the database to replace them with
+             real ones. These say what the platform does instead, which is
+             true whether it has run once or a thousand times. -->
         <div class="d-flex flex-wrap gap-4 mt-4">
-          <div><span class="fw-bold text-success">12,400+</span><br><small class="text-muted">Meals Distributed</small></div>
-          <div><span class="fw-bold text-success">340+</span><br><small class="text-muted">Food Donors</small></div>
-          <div><span class="fw-bold text-success">85</span><br><small class="text-muted">NGO Partners</small></div>
+          <div><span class="fw-bold text-success"><i class="bi bi-geo-alt-fill me-1"></i>Mapped</span><br><small class="text-muted">Pickup &amp; drop-off on OpenStreetMap</small></div>
+          <div><span class="fw-bold text-success"><i class="bi bi-bell-fill me-1"></i>Notified</span><br><small class="text-muted">In-app &amp; email at every step</small></div>
+          <div><span class="fw-bold text-success"><i class="bi bi-shield-check me-1"></i>Verified</span><br><small class="text-muted">Admin-approved accounts</small></div>
         </div>
       </div>
+
       <div class="col-lg-6">
-        <!-- Mini Dashboard Preview -->
+        <!-- Interface illustration. Deliberately shows the delivery pipeline
+             rather than invented donor names and metrics. -->
         <div class="dash-preview">
           <div class="dash-preview-bar">
             <div class="dash-dot" style="background:#ff5f57"></div>
             <div class="dash-dot" style="background:#febc2e"></div>
             <div class="dash-dot" style="background:#28c840"></div>
-            <span class="text-white opacity-75 ms-auto me-auto" style="font-size:.8rem">FoodBridge Dashboard</span>
+            <span class="text-white opacity-75 ms-auto me-auto" style="font-size:.8rem">FoodBridge — delivery pipeline</span>
           </div>
           <div class="p-3">
-            <div class="row g-2 mb-3">
-              <div class="col-6 col-md-3"><div class="stat-card p-2 text-center"><div class="stat-val" style="font-size:1.5rem;color:var(--green)">142</div><div class="stat-lbl" style="font-size:.7rem">Today</div></div></div>
-              <div class="col-6 col-md-3"><div class="stat-card p-2 text-center"><div class="stat-val" style="font-size:1.5rem;color:var(--amber)">38</div><div class="stat-lbl" style="font-size:.7rem">NGOs</div></div></div>
-              <div class="col-6 col-md-3"><div class="stat-card p-2 text-center"><div class="stat-val" style="font-size:1.5rem;color:var(--blue)">94%</div><div class="stat-lbl" style="font-size:.7rem">Delivered</div></div></div>
-              <div class="col-6 col-md-3"><div class="stat-card p-2 text-center"><div class="stat-val" style="font-size:1.5rem;color:var(--purple)">2.1k</div><div class="stat-lbl" style="font-size:.7rem">Meals</div></div></div>
-            </div>
-            <div class="table-responsive" style="font-size:.8rem">
+            <div class="table-responsive" style="font-size:.82rem">
               <table class="fb-table">
-                <thead><tr><th>Donor</th><th>Food</th><th>Qty</th><th>Status</th></tr></thead>
+                <thead><tr><th class="ps-3">Stage</th><th>Who acts</th><th>Status</th></tr></thead>
                 <tbody>
-                  <tr><td>Ali's Restaurant</td><td>Biryani</td><td>30</td><td><span class="badge-status badge-accepted">Accepted</span></td></tr>
-                  <tr><td>Event Catering</td><td>Mixed</td><td>80</td><td><span class="badge-status badge-pending">Pending</span></td></tr>
-                  <tr><td>Sara Ahmed</td><td>Dal Roti</td><td>10</td><td><span class="badge-status badge-delivered">Delivered</span></td></tr>
+                  <tr><td class="ps-3">Food posted</td><td>Donor</td><td><span class="badge-status badge-pending">Posted</span></td></tr>
+                  <tr><td class="ps-3">Checked &amp; approved</td><td>Admin</td><td><span class="badge-status badge-verified">Approved</span></td></tr>
+                  <tr><td class="ps-3">Claimed</td><td>NGO</td><td><span class="badge-status badge-accepted">Requested</span></td></tr>
+                  <tr><td class="ps-3">Collected</td><td>Volunteer</td><td><span class="badge-status badge-accepted">Picked Up</span></td></tr>
+                  <tr><td class="ps-3">Handed over</td><td>NGO confirms</td><td><span class="badge-status badge-delivered">Delivered</span></td></tr>
                 </tbody>
               </table>
+            </div>
+            <div class="text-muted mt-2" style="font-size:.75rem">
+              <i class="bi bi-info-circle me-1"></i>Every stage is timestamped and visible to the donor.
             </div>
           </div>
         </div>
@@ -85,14 +96,16 @@
   </div>
 </section>
 
-<!-- STATS STRIP -->
+<!-- CAPABILITY STRIP -->
+<!-- Was four invented totals. These four are properties of the build itself,
+     so they are checkable rather than claimed. -->
 <div class="stats-strip">
   <div class="container">
     <div class="row text-center g-3">
-      <div class="col-6 col-md-3"><div class="s-num">12,400+</div><div class="s-lbl">Meals Distributed</div></div>
-      <div class="col-6 col-md-3"><div class="s-num">340+</div><div class="s-lbl">Food Donors</div></div>
-      <div class="col-6 col-md-3"><div class="s-num">85</div><div class="s-lbl">NGO Partners</div></div>
-      <div class="col-6 col-md-3"><div class="s-num">200+</div><div class="s-lbl">Active Volunteers</div></div>
+      <div class="col-6 col-md-3"><div class="s-num">4</div><div class="s-lbl">User Roles Supported</div></div>
+      <div class="col-6 col-md-3"><div class="s-num">8</div><div class="s-lbl">Notification Events</div></div>
+      <div class="col-6 col-md-3"><div class="s-num">5</div><div class="s-lbl">Automated Fraud Checks</div></div>
+      <div class="col-6 col-md-3"><div class="s-num">0</div><div class="s-lbl">Paid API Keys Needed</div></div>
     </div>
   </div>
 </div>
@@ -109,25 +122,25 @@
       <div class="col-sm-6 col-lg-3">
         <div class="step-card h-100"><span class="step-num">01</span>
           <div class="step-icon"><i class="bi bi-person-plus-fill"></i></div>
-          <h5>Register & List</h5><p class="text-muted" style="font-size:.9rem">Donors register and post available leftover food with quantity, type, and pickup window.</p>
+          <h5>Register &amp; List</h5><p class="text-muted" style="font-size:.9rem">Donors register, wait for admin approval, then post surplus food with quantity, type, expiry and pickup window.</p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
         <div class="step-card h-100"><span class="step-num">02</span>
-          <div class="step-icon"><i class="bi bi-search"></i></div>
-          <h5>NGO Reviews</h5><p class="text-muted" style="font-size:.9rem">Verified NGOs browse available donations and accept requests that match their capacity.</p>
+          <div class="step-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
+          <h5>Approved &amp; Claimed</h5><p class="text-muted" style="font-size:.9rem">An admin reviews the listing, then verified NGOs see it and claim the ones matching their capacity.</p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
         <div class="step-card h-100"><span class="step-num">03</span>
           <div class="step-icon"><i class="bi bi-truck"></i></div>
-          <h5>Volunteer Picks Up</h5><p class="text-muted" style="font-size:.9rem">Assigned volunteers are notified, pick up food from donor, and deliver to the NGO.</p>
+          <h5>Volunteer Collects</h5><p class="text-muted" style="font-size:.9rem">An admin assigns a volunteer, who confirms pickup and delivery from their own dashboard.</p>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
         <div class="step-card h-100"><span class="step-num">04</span>
           <div class="step-icon"><i class="bi bi-check2-circle"></i></div>
-          <h5>Tracked & Confirmed</h5><p class="text-muted" style="font-size:.9rem">Delivery is confirmed, feedback collected, and the transaction logged for full transparency.</p>
+          <h5>Confirmed &amp; Rated</h5><p class="text-muted" style="font-size:.9rem">The NGO confirms what arrived, everyone involved can rate each other, and the whole chain stays on record.</p>
         </div>
       </div>
     </div>
@@ -135,44 +148,98 @@
 </section>
 
 <!-- FEATURES -->
-<section style="padding:72px 0">
+<section id="features" style="padding:72px 0">
   <div class="container">
-    <div class="row align-items-center g-5 mb-5">
-      <div class="col-lg-5">
-        <div style="background:linear-gradient(145deg,#e8f5ee,#d8f3dc);border-radius:20px;padding:2.5rem;min-height:300px;display:flex;align-items:center;justify-content:center">
-          <i class="bi bi-clipboard2-data-fill" style="font-size:6rem;color:var(--green-mid);opacity:.75"></i>
-        </div>
-      </div>
-      <div class="col-lg-7">
-        <span class="section-tag">For Donors</span>
-        <h2 class="section-title">Easy Food Donation Management</h2>
-        <ul class="feat-list mt-3">
-          <li><i class="bi bi-check-circle-fill"></i>Quick food listing with quantity, type & expiry time</li>
-          <li><i class="bi bi-check-circle-fill"></i>Real-time status updates on your donation</li>
-          <li><i class="bi bi-check-circle-fill"></i>Full history log of all past donations</li>
-          <li><i class="bi bi-check-circle-fill"></i>Receive confirmation when food is delivered</li>
-          <li><i class="bi bi-check-circle-fill"></i>Digital appreciation certificate</li>
-        </ul>
-        <a href="donate-form.html" class="btn-green mt-3 d-inline-block">Start Donating</a>
-      </div>
+    <div class="text-center mb-5">
+      <span class="section-tag">Features</span>
+      <h2 class="section-title">Everything the Platform Does</h2>
+      <p class="section-sub mx-auto text-center">Every item below is built and working in the application — nothing here is planned or coming soon.</p>
     </div>
-    <div class="row align-items-center flex-lg-row-reverse g-5">
-      <div class="col-lg-5">
-        <div style="background:linear-gradient(145deg,#fff3e0,#ffe0b2);border-radius:20px;padding:2.5rem;min-height:300px;display:flex;align-items:center;justify-content:center">
-          <i class="bi bi-people-fill" style="font-size:6rem;color:var(--amber);opacity:.75"></i>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-box-seam-fill"></i></div>
+          <h5>Donation Posting</h5>
+          <p class="text-muted" style="font-size:.88rem">Food description, category, quantity, servings, expiry, dietary flags, pickup address and window, contact details and a photo upload.</p>
         </div>
       </div>
-      <div class="col-lg-7">
-        <span class="section-tag">For NGOs & Volunteers</span>
-        <h2 class="section-title">Coordinate Distribution Efficiently</h2>
-        <ul class="feat-list mt-3">
-          <li><i class="bi bi-check-circle-fill"></i>Browse and accept nearby food donations</li>
-          <li><i class="bi bi-check-circle-fill"></i>Assign volunteers to pickup tasks</li>
-          <li><i class="bi bi-check-circle-fill"></i>Track deliveries in real time</li>
-          <li><i class="bi bi-check-circle-fill"></i>Generate monthly distribution reports</li>
-          <li><i class="bi bi-check-circle-fill"></i>In-system messaging with donors</li>
-        </ul>
-        <a href="login.html" class="btn-amber mt-3 d-inline-block">Register as NGO</a>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:var(--purple-light);color:var(--purple)"><i class="bi bi-shield-check"></i></div>
+          <h5>Admin Approval</h5>
+          <p class="text-muted" style="font-size:.88rem">Accounts and donations are both reviewed before they go live. Admins approve, reject, suspend and reinstate from a single queue.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:var(--amber-light);color:var(--amber)"><i class="bi bi-hand-index-thumb-fill"></i></div>
+          <h5>NGO Claiming</h5>
+          <p class="text-muted" style="font-size:.88rem">Verified NGOs browse approved donations and claim them. Claiming is race-safe, so two NGOs can never win the same donation.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-bicycle"></i></div>
+          <h5>Volunteer Assignment</h5>
+          <p class="text-muted" style="font-size:.88rem">Admins assign volunteers, seeing each one's current workload first. Volunteers confirm pickup and delivery as they go.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-geo-alt-fill"></i></div>
+          <h5>Maps &amp; Live Tracking</h5>
+          <p class="text-muted" style="font-size:.88rem">Pickup and drop-off plotted on OpenStreetMap, with optional live volunteer location during an active delivery — opt-in, and off by default.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-clock-history"></i></div>
+          <h5>Donation Tracking</h5>
+          <p class="text-muted" style="font-size:.88rem">Donors follow a five-step timeline — posted, approved, accepted, picked up, delivered — with real timestamps and a live expiry countdown.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:var(--amber-light);color:var(--amber)"><i class="bi bi-bell-fill"></i></div>
+          <h5>Notifications</h5>
+          <p class="text-muted" style="font-size:.88rem">Eight events raise an in-app notification and an email, with per-event preferences. Account and security messages are always delivered.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:#fef3c7;color:#92400e"><i class="bi bi-star-fill"></i></div>
+          <h5>Ratings &amp; Trust</h5>
+          <p class="text-muted" style="font-size:.88rem">Donor, NGO and volunteer rate each other after a completed delivery. Scores roll up into a trust level computed from real deliveries.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:#fee2e2;color:var(--red)"><i class="bi bi-exclamation-triangle-fill"></i></div>
+          <h5>Emergency Mode</h5>
+          <p class="text-muted" style="font-size:.88rem">Admins declare an emergency and broadcast to a targeted audience by role and city, with the recipient count shown before sending.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:var(--purple-light);color:var(--purple)"><i class="bi bi-shield-exclamation"></i></div>
+          <h5>Fraud Detection</h5>
+          <p class="text-muted" style="font-size:.88rem">Five rules flag duplicate listings, rapid posting, repeated cancellations, quantity mismatches and unverifiable addresses — into a review queue, never an automatic block.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-bar-chart-fill"></i></div>
+          <h5>Reports &amp; Analytics</h5>
+          <p class="text-muted" style="font-size:.88rem">Period-scoped figures on donations, meals, fulfilment and waste, with breakdowns by category and city, CSV export and a print-to-PDF layout.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="role-card h-100">
+          <div class="role-icon" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-search"></i></div>
+          <h5>Role-Scoped Search</h5>
+          <p class="text-muted" style="font-size:.88rem">One search box across the app that only ever returns what your role is entitled to see — your own donations, the ones open to you, or everything if you administer it.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -184,73 +251,51 @@
     <div class="text-center mb-5">
       <span class="section-tag">Roles</span>
       <h2 class="section-title">Who Uses FoodBridge?</h2>
+      <p class="section-sub mx-auto text-center">Four roles, each with its own dashboard. Every account is reviewed by an administrator before it can sign in.</p>
     </div>
     <div class="row g-4">
       <div class="col-sm-6 col-lg-3">
         <div class="role-card h-100">
           <div class="role-icon" style="background:#e8f5ee;color:var(--green)"><i class="bi bi-person-fill"></i></div>
-          <h5>Food Donor</h5><p class="text-muted" style="font-size:.88rem">Restaurants, households, hotels and events with surplus food to offer.</p>
-          <a href="donate-form.html" class="badge-status badge-verified mt-2 d-inline-block">List Food →</a>
+          <h5>Food Donor</h5><p class="text-muted" style="font-size:.88rem">Restaurants, households, hotels and events with surplus food to offer. Post it, then follow it to the doorstep.</p>
+          <a href="Donor/donate-form.aspx" class="badge-status badge-verified mt-2 d-inline-block">List Food →</a>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
         <div class="role-card h-100">
           <div class="role-icon" style="background:var(--amber-light);color:var(--amber)"><i class="bi bi-building-fill-heart"></i></div>
-          <h5>NGO / Charity</h5><p class="text-muted" style="font-size:.88rem">Verified organizations that accept and distribute food to underprivileged communities.</p>
-          <a href="login.html" class="badge-status badge-role-ngo mt-2 d-inline-block">Accept Requests →</a>
+          <h5>NGO / Charity</h5><p class="text-muted" style="font-size:.88rem">Verified organizations that claim donations, receive them, and confirm what actually arrived.</p>
+          <a href="login.aspx" class="badge-status badge-role-ngo mt-2 d-inline-block">Accept Requests →</a>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
         <div class="role-card h-100">
           <div class="role-icon" style="background:var(--blue-light);color:var(--blue)"><i class="bi bi-bicycle"></i></div>
-          <h5>Volunteer</h5><p class="text-muted" style="font-size:.88rem">Community members who pick up food and deliver to NGOs or people in need.</p>
-          <a href="login.html" class="badge-status badge-role-vol mt-2 d-inline-block">Join as Volunteer →</a>
+          <h5>Volunteer</h5><p class="text-muted" style="font-size:.88rem">Community members assigned to collect food from a donor and deliver it to the receiving NGO.</p>
+          <a href="login.aspx" class="badge-status badge-role-vol mt-2 d-inline-block">Join as Volunteer →</a>
         </div>
       </div>
       <div class="col-sm-6 col-lg-3">
         <div class="role-card h-100">
           <div class="role-icon" style="background:var(--purple-light);color:var(--purple)"><i class="bi bi-shield-lock-fill"></i></div>
-          <h5>Admin</h5><p class="text-muted" style="font-size:.88rem">System administrator managing users, verifying NGOs, and overseeing all activity.</p>
-          <a href="login.html" class="badge-status badge-role-admin mt-2 d-inline-block">Admin Login →</a>
+          <h5>Admin</h5><p class="text-muted" style="font-size:.88rem">Approves accounts and donations, assigns volunteers, reviews fraud flags and runs the reports.</p>
+          <a href="login.aspx" class="badge-status badge-role-admin mt-2 d-inline-block">Admin Login →</a>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- RECENT DONATIONS -->
-<section style="padding:72px 0">
-  <div class="container">
-    <div class="d-flex align-items-end justify-content-between flex-wrap gap-3 mb-4">
-      <div><span class="section-tag">Live Feed</span><h2 class="section-title mb-0">Recent Donations</h2></div>
-      <a href="donations-list.html" class="btn-outline-green">View All</a>
-    </div>
-    <div class="fb-card p-0 overflow-hidden">
-      <div class="table-responsive">
-        <table class="fb-table">
-          <thead><tr><th class="ps-4">Donor</th><th>Food Type</th><th>Quantity</th><th>Location</th><th>NGO Assigned</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td class="ps-4"><strong>Ali's Restaurant</strong><br><small class="text-muted">21 Apr 2025</small></td><td>Biryani & Naan</td><td>30 plates</td><td><i class="bi bi-geo-alt text-muted me-1"></i>Gulshan, Karachi</td><td>Edhi Foundation</td><td><span class="badge-status badge-accepted">Accepted</span></td></tr>
-            <tr><td class="ps-4"><strong>Park View Hall</strong><br><small class="text-muted">21 Apr 2025</small></td><td>Mixed Cuisines</td><td>200 plates</td><td><i class="bi bi-geo-alt text-muted me-1"></i>DHA, Lahore</td><td>Saylani Welfare</td><td><span class="badge-status badge-delivered">Delivered</span></td></tr>
-            <tr><td class="ps-4"><strong>Sara Ahmed</strong><br><small class="text-muted">20 Apr 2025</small></td><td>Dal & Roti</td><td>10 plates</td><td><i class="bi bi-geo-alt text-muted me-1"></i>F-10, Islamabad</td><td>Al-Khidmat</td><td><span class="badge-status badge-delivered">Delivered</span></td></tr>
-            <tr><td class="ps-4"><strong>Marriott Catering</strong><br><small class="text-muted">20 Apr 2025</small></td><td>Continental Buffet</td><td>150 plates</td><td><i class="bi bi-geo-alt text-muted me-1"></i>Clifton, Karachi</td><td>—</td><td><span class="badge-status badge-pending">Pending</span></td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<section style="padding:0 0 80px">
+<section style="padding:72px 0 80px">
   <div class="container">
     <div class="cta-block">
       <i class="bi bi-heart-fill fs-1 mb-3 d-block" style="color:var(--green-light)"></i>
       <h2>Ready to Make a Difference?</h2>
-      <p>Join thousands of donors, volunteers, and NGOs already fighting food waste and hunger together.</p>
+      <p>Register as a donor, an NGO or a volunteer. An administrator reviews every account before it goes live.</p>
       <div class="d-flex justify-content-center flex-wrap gap-3">
-        <a href="donate-form.html" class="btn-white">Donate Food Now</a>
-        <a href="login.html" style="border:2px solid rgba(255,255,255,.5);color:#fff;border-radius:50px;padding:.65rem 1.8rem;font-weight:600;display:inline-block">Register as NGO</a>
+        <a href="Donor/donate-form.aspx" class="btn-white">Donate Food Now</a>
+        <a href="login.aspx" style="border:2px solid rgba(255,255,255,.5);color:#fff;border-radius:50px;padding:.65rem 1.8rem;font-weight:600;display:inline-block">Create an Account</a>
       </div>
     </div>
   </div>
@@ -260,20 +305,34 @@
 <footer class="fb-footer">
   <div class="container">
     <div class="row g-4">
-      <div class="col-lg-4">
+      <div class="col-lg-5">
         <div class="brand mb-2"><i class="bi bi-basket2-fill me-1"></i>Food<span>Bridge</span></div>
         <p style="font-size:.88rem;line-height:1.7">Reducing food wastage and fighting hunger by connecting donors, NGOs, and volunteers on a single platform.</p>
       </div>
-      <div class="col-6 col-md-3 col-lg-2"><h6>Platform</h6><a href="index.html">Home</a><a href="#how">How It Works</a><a href="donations-list.html">Donations</a></div>
-      <div class="col-6 col-md-3 col-lg-2"><h6>Users</h6><a href="donate-form.html">Food Donors</a><a href="login.html">NGOs</a><a href="login.html">Volunteers</a><a href="login.html">Admin</a></div>
-      <div class="col-6 col-md-3 col-lg-2"><h6>Support</h6><a href="about.html">About Us</a><a href="about.html#contact">Contact</a><a href="#">Privacy Policy</a></div>
-      <div class="col-6 col-md-3 col-lg-2"><h6>Connect</h6><a href="#"><i class="bi bi-facebook me-1"></i>Facebook</a><a href="#"><i class="bi bi-instagram me-1"></i>Instagram</a><a href="#"><i class="bi bi-twitter-x me-1"></i>Twitter/X</a></div>
+      <div class="col-6 col-md-4 col-lg-2"><h6>Platform</h6>
+        <a href="index.html">Home</a>
+        <a href="#how">How It Works</a>
+        <a href="#features">Features</a>
+        <a href="#roles">Who We Serve</a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2"><h6>Get Started</h6>
+        <a href="Donor/donate-form.aspx">Donate Food</a>
+        <a href="login.aspx">Sign In</a>
+        <a href="login.aspx">Register</a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-3"><h6>Project</h6>
+        <a href="about.html">About FoodBridge</a>
+        <a href="about.html#contact">Contact</a>
+        <a href="about.html#tech">Technology</a>
+      </div>
     </div>
-    <hr/><div class="d-flex flex-wrap justify-content-between gap-2"><small>© 2025 FoodBridge. All rights reserved.</small><small>Built with Bootstrap 5</small></div>
+    <!-- Social links and a Privacy Policy link were removed: there are no
+         FoodBridge social accounts and no privacy document exists. -->
+    <hr/><div class="d-flex flex-wrap justify-content-between gap-2"><small>© 2026 FoodBridge — Final Year Project.</small><small>Built with ASP.NET Web Forms &amp; Bootstrap 5</small></div>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/main.js"></script>
+<script src="assets/js/main.js"></script>
 </body>
 </html>
